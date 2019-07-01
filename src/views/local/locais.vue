@@ -2,7 +2,7 @@
   <div>
     <h2 class="content-block">Localizar Locais</h2>
 
-    <div class="content-block">
+    <div class="content-block" id="bloco1">
       <div class="dx-card responsive-paddings">
         <div class="left-side">
           <div class="dx-field-label" style="width:90px;">INFORME:</div>
@@ -37,30 +37,32 @@
           <dx-editing :allow-updating="true" :popup="{width:700, height:345}" mode="popup"/>-->
           <dx-filter-row :visible="false" apply-filter="auto"/>
 
-          <dx-column
+          <!--<dx-column
             :activeStateEnabled="false"
             :width="110"
             :allow-sorting="false"
             data-field="Ações"
             cell-template="cellTemplate"
             :allowEditing="false"
-          />
+          />-->
+
+          <dx-column caption="Ações" :width="110" :buttons="editButtons" type="buttons"/>
 
           <dx-column caption="Nome" data-field="nome"/>
           <dx-column caption="Contato" data-field="contato"/>
           <dx-column caption="Email" data-field="email"/>
           <dx-column caption="Status" data-field="status"/>
 
-          <div slot="cellTemplate" slot-scope="data">
+          <!--<div slot="cellTemplate" slot-scope="data">
             <dx-button styling-mode="outlined" @click="onEditClick(data)" icon="edit"/>
             <dx-button
               type="normal"
               text
-              @click="onUserDeleteClick(data)"
+              @click="onDeleteClick(data)"
               icon="trash"
               style="margin-left:10px;"
             />
-          </div>
+          </div>-->
         </dx-data-grid>
       </div>
     </div>
@@ -166,6 +168,20 @@ export default {
         { key: "nome", text: "NOME" },
         { key: "status", text: "STATUS" }
       ],
+      editButtons: [
+        {
+          hint: "Editar",
+          icon: "edit",
+          visible: this.btnEditar,
+          onClick: this.onEditClick
+        },
+        {
+          hint: "Excluir",
+          icon: "trash",
+          visible: true,
+          onClick: this.onDeleteClick
+        }
+      ],
       dataSource: dataSource,
       remoteOperations: {
         sorting: true,
@@ -201,36 +217,78 @@ export default {
     },
 
     onEditClick(item) {
-      const id = item.data.data.id;
+      const id = item.row.data.id;
       this.$router.push({ name: "local", params: { id } });
     },
 
-    onUserDeleteClick(item) {
+    onDeleteClick(item) {
       this.$nextTick(function() {
-        let result = confirm("<i>Confirma exclusão?</i>", "Confirmação");
+        let result = confirm(
+          "<div style='margin-left:15px!important;margin-right:15px!important;'><i>Confirma exclusão do Local selecionado?</i></div>",
+          "Confirmação"
+        );
         result.then(dialogResult => {
           if (!dialogResult) {
             return false;
           }
 
-          const id = item.data.id;
+          const id = item.row.data.id;
 
           loading();
-          Service.deletePessoa(id)
+          Service.deleteLocal(id)
             .then(res => {
               loading();
               this.dataSource.reload();
               const message = "Excluído com sucesso";
-              notify(message, "success", 1000);
+              const position = {
+                at: "center center",
+                of: "#bloco1"
+              };
+              notify(
+                {
+                  message: message,
+                  position,
+                  width: 300,
+                  shading: true
+                },
+                "success",
+                2000
+              );
             })
             .catch(error => {
               loading();
               if (_.isArray(error)) {
                 error.forEach(i => {
-                  notify(i.message, "error", 2000);
+                  const position = {
+                    at: "center center",
+                    of: "#bloco1"
+                  };
+                  notify(
+                    {
+                      message: i.message,
+                      position,
+                      width: 300,
+                      shading: true
+                    },
+                    "error",
+                    4000
+                  );
                 });
               } else {
-                notify(error, "error", 6000);
+                const position = {
+                  at: "center center",
+                  of: "#bloco1"
+                };
+                notify(
+                  {
+                    message: error,
+                    position,
+                    width: 300,
+                    shading: true
+                  },
+                  "error",
+                  4000
+                );
               }
             });
         });

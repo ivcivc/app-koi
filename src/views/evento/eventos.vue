@@ -2,15 +2,18 @@
   <div>
     <h2 class="content-block">Localizar Eventos</h2>
 
-    <div class="content-block">
+    <div class="content-block" id="bloco1">
       <div class="dx-card responsive-paddings">
         <div class="left-side">
           <div class="dx-field-label" style="width:85px;">INFORME:</div>
           <dx-select-box
             :data-source="fields"
             :value="fields[0].key"
+            :selection="{ mode: 'single' }"
             value-expr="key"
             display-expr="text"
+            :paging="paging"
+            :pager="pager"
             v-model="key"
           />
           <dx-text-box v-model="value" style="margin-left:6px;"/>
@@ -37,27 +40,29 @@
           <dx-editing :allow-updating="true" :popup="{width:700, height:345}" mode="popup"/>-->
           <dx-filter-row :visible="false" apply-filter="auto"/>
 
-          <dx-column
+          <!--<dx-column
             :activeStateEnabled="false"
             :width="110"
             :allow-sorting="false"
             data-field="Ações"
             cell-template="cellTemplate"
             :allowEditing="false"
-          />
+          />-->
+
+          <dx-column caption="Ações" :width="110" :buttons="editButtons" type="buttons"/>
 
           <dx-column caption="Nome" data-field="nome"/>
-          <dx-column caption="Local" data-field="local.nome"/>
+          <dx-column caption="Local" data-field="local.nome" :allow-sorting="false"/>
           <dx-column caption="Início" data-field="dInicio" data-type="date"/>
           <dx-column caption="Término" data-field="dTermino" data-type="date"/>
           <dx-column caption="Status" data-field="status"/>
 
           <div slot="cellTemplate" slot-scope="data">
-            <dx-button styling-mode="outlined" @click="onUserEditClick(data)" icon="edit"/>
+            <dx-button styling-mode="outlined" @click="onEditClick(data)" icon="edit"/>
             <dx-button
               type="normal"
               text
-              @click="onUserDeleteClick(data)"
+              @click="onDeleteClick(data)"
               icon="trash"
               style="margin-left:10px;"
             />
@@ -107,6 +112,9 @@ const dataSource = new DataSource({
 
       let o = { isLocalizar: true };
 
+      o.page = params.skip;
+      o.take = params.take;
+
       if (!loadOptions.localizar) {
         loadOptions.localizar = null;
       } else {
@@ -151,6 +159,10 @@ export default {
 
   created() {},
 
+  mounted() {
+    window.app = this;
+  },
+
   data() {
     return {
       pattern: /^\(\d{3}\) \d{3}-\d{2}$/i,
@@ -159,6 +171,21 @@ export default {
         precision: 2
       },
       eventos: [],
+      btnEditar: true,
+      editButtons: [
+        {
+          hint: "Editar",
+          icon: "edit",
+          visible: this.btnEditar,
+          onClick: this.onEditClick
+        },
+        {
+          hint: "Excluir",
+          icon: "trash",
+          visible: true,
+          onClick: this.onDeleteClick
+        }
+      ],
       fields: [
         { key: "nome", text: "NOME" },
         { key: "status", text: "STATUS" }
@@ -169,7 +196,7 @@ export default {
         paging: true
       },
       paging: {
-        pageSize: 15
+        pageSize: 5
       },
       pager: {
         showPageSizeSelector: true,
@@ -201,39 +228,81 @@ export default {
       this.dataSource.reload();
     },
 
-    onUserEditClick(item) {
-      console.log("editaar ", item.data.data);
-      const id = item.data.data.id;
+    onEditClick(item) {
+      console.log("editaar ", item.row.data);
+      const id = item.row.data.id;
       console.log("ID ", id);
       this.$router.push({ path: "/evento/" + id, params: { id } });
     },
 
-    onUserDeleteClick(item) {
-      const id = item.data.data.id;
+    onDeleteClick(item) {
+      const id = item.row.data.id;
 
       this.$nextTick(function() {
-        let result = confirm("<i>Confirma exclusão?</i>", "Confirmação");
+        let result = confirm(
+          "<div style='margin-left:15px!important;margin-right:15px!important;'><p>Confirma a exclusão do evento selecionado?</p></div>",
+          "  Confirmação"
+        );
         result.then(dialogResult => {
           console.log(dialogResult);
           if (!dialogResult) {
             return false;
           }
           loading();
-          Service.deleteTreinamento(id)
+          Service.deleteEvento(id)
             .then(res => {
               loading();
-              this.dataSource.reload();
               const message = "Excluído com sucesso";
-              notify(message, "success", 1000);
+              const position = {
+                at: "center center",
+                of: "#bloco1"
+              };
+              notify(
+                {
+                  message: message,
+                  position,
+                  width: 300,
+                  shading: true
+                },
+                "success",
+                2000
+              );
+              this.onLocalizar();
             })
             .catch(error => {
               loading();
               if (_.isArray(error)) {
                 error.forEach(i => {
-                  notify(i.message, "error", 2000);
+                  const position = {
+                    at: "center center",
+                    of: "#bloco1"
+                  };
+                  notify(
+                    {
+                      message: i.message,
+                      position,
+                      width: 300,
+                      shading: true
+                    },
+                    "error",
+                    4000
+                  );
                 });
               } else {
-                notify(error, "error", 6000);
+                const position = {
+                  at: "center center",
+                  of: "#bloco1"
+                };
+                notify(
+                  {
+                    message: error,
+                    position,
+                    width: 300,
+                    shading: true
+                  },
+                  "error",
+                  4000
+                );
               }
             });
         });

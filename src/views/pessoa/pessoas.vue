@@ -1,8 +1,8 @@
 <template>
   <div>
-    <h2 class="content-block">Localizar Clientes</h2>
+    <h2 class="content-block">Localizar Pessoas</h2>
 
-    <div class="content-block">
+    <div class="content-block" id="bloco1">
       <div class="dx-card responsive-paddings">
         <div class="left-side">
           <div class="dx-field-label" style="width:110px;">LOCALIZAR POR:</div>
@@ -37,30 +37,32 @@
           <dx-editing :allow-updating="true" :popup="{width:700, height:345}" mode="popup"/>-->
           <dx-filter-row :visible="false" apply-filter="auto"/>
 
-          <dx-column
+          <!--<dx-column
             :activeStateEnabled="false"
             :width="100"
             :allow-sorting="false"
             data-field="Ações"
             cell-template="cellTemplate"
             :allowEditing="false"
-          />
+          />-->
+
+          <dx-column caption="Ações" :width="110" :buttons="editButtons" type="buttons"/>
 
           <dx-column caption="Nome" data-field="nome"/>
           <dx-column caption="CPF" data-field="cpf" format="###.000.000-00"/>
           <dx-column caption="RG" data-field="rg"/>
           <dx-column caption="WatsApp" data-field="tel_celular"/>
 
-          <div slot="cellTemplate" slot-scope="data">
-            <dx-button styling-mode="outlined" @click="onUserEditClick(data)" icon="edit"/>
+          <!--<div slot="cellTemplate" slot-scope="data">
+            <dx-button styling-mode="outlined" @click="onEditClick(data)" icon="edit"/>
             <dx-button
               type="normal"
               text
-              @click="onUserDeleteClick(data)"
+              @click="onDeleteClick(data)"
               icon="trash"
               style="margin-left:10px;"
             />
-          </div>
+          </div>-->
         </dx-data-grid>
       </div>
     </div>
@@ -116,6 +118,13 @@ const dataSource = new DataSource({
         if (value) {
           o[key] = value;
         }
+      }
+
+      let sort = null;
+
+      if (_.isArray(loadOptions.sort)) {
+        o["sortSelector"] = loadOptions.sort[0].selector;
+        o["sortDirection"] = loadOptions.sort[0].desc ? "DESC" : "ASC";
       }
 
       if (!_.has(loadOptions, "start")) {
@@ -177,6 +186,20 @@ export default {
       ],
       fields: [{ key: "nome", text: "NOME" }, { key: "cpf", text: "CPF" }],
       dataSource: dataSource,
+      editButtons: [
+        {
+          hint: "Editar",
+          icon: "edit",
+          visible: this.btnEditar,
+          onClick: this.onEditClick
+        },
+        {
+          hint: "Excluir",
+          icon: "trash",
+          visible: true,
+          onClick: this.onDeleteClick
+        }
+      ],
       remoteOperations: {
         sorting: true,
         paging: true
@@ -210,40 +233,82 @@ export default {
       this.dataSource.reload();
     },
 
-    onUserEditClick(item) {
-      const id = item.data.data.id;
+    onEditClick(item) {
+      const id = item.row.data.id;
       this.$router.push({ name: "pessoa", params: { id } });
     },
 
-    onUserDeleteClick(item) {
-      this.$nextTick(() => {
-        let result = confirm("<i>Confirma exclusão?</i>", "Confirmação");
+    onDeleteClick(item) {
+      this.$nextTick(function() {
+        let result = confirm(
+          "<div style='margin-left:15px!important;margin-right:15px!important;'><i>Confirma exclusão do registro selecionado?</i></div>",
+          "Confirmação"
+        );
         result.then(dialogResult => {
           if (!dialogResult) {
             return false;
           }
           loading();
 
-          const id = item.data.data.id
+          const id = item.row.data.id;
 
           Service.deletePessoa(id)
             .then(r => {
               loading();
               const message = "Excluído com sucesso";
-              notify(message, "success", 1000);
+              const position = {
+                at: "center center",
+                of: "#bloco1"
+              };
+              notify(
+                {
+                  message: message,
+                  position,
+                  width: 300,
+                  shading: true
+                },
+                "error",
+                5000
+              );
               this.dataSource.reload();
             })
             .catch(error => {
               loading();
-              if ( _.isArray( error )) {
+              if (_.isArray(error)) {
                 error.forEach(i => {
-                    notify(i.message, "error", 2000);
-                })
+                  const position = {
+                    at: "center center",
+                    of: "#bloco1"
+                  };
+                  notify(
+                    {
+                      message: i.message,
+                      position,
+                      width: 300,
+                      shading: true
+                    },
+                    "error",
+                    3000
+                  );
+                });
               } else {
-                notify(error, "error", 6000);
+                console.log("error ", error);
+                const position = {
+                  at: "center center",
+                  of: "#bloco1"
+                };
+                notify(
+                  {
+                    message: error,
+                    position,
+                    width: 300,
+                    shading: true
+                  },
+                  "error",
+                  5000
+                );
               }
             });
-
         });
       });
     },

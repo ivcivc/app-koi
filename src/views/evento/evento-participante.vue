@@ -2,13 +2,17 @@
   <div>
     <h1 v-if="isTitle">Participante</h1>
 
-    <div class="content-block1">
+    <div class="content-block1" id="bloco1">
       <dx-scroll-view :height="scrollHeight">
         <dx-validation-group>
           <div class="row">
             <div class="col-xs-12 col-sm-7 col-md-8">
               <div class="box">
-                <span style="margin-left:6px;">Nome *</span>
+                <!--<span style="margin-left:6px;">Nome *</span>-->
+                <span style="margin-left:6px;">
+                  <span style="margin-left:0px;">Nome *</span>
+                  <a style="margin-left:40px;" href="#" @click="this.formCliente">adicionar</a>
+                </span>
                 <div class="dx-field">
                   <DxSelectBox
                     :search-enabled="true"
@@ -21,7 +25,7 @@
                     display-expr="nome"
                     value-expr="id"
                     :value="1"
-                    v-model="evento.pessoa_id"
+                    v-model="participante.pessoa_id"
                   >
                     <dx-validator>
                       <dx-required-rule message="Informe o nome do Aluno."/>
@@ -35,7 +39,10 @@
               <div class="box">
                 <span style="margin-left:6px;"></span>
                 <div class="dx-field">
-                  <dx-check-box v-model="evento.treinamentoConcluido" text="Treinamento Concluído"/>
+                  <dx-check-box
+                    v-model="participante.treinamentoConcluido"
+                    text="Treinamento Concluído"
+                  />
                 </div>
               </div>
             </div>
@@ -46,7 +53,7 @@
               <div class="box">
                 <span style="margin-left:6px;">Total Parcelas *</span>
                 <div class="dx-field">
-                  <dx-number-box value v-model="evento.parcelas">
+                  <dx-number-box value v-model="participante.parcelas">
                     <dx-validator>
                       <dx-range-rule
                         :min="0"
@@ -66,7 +73,7 @@
               <div class="box">
                 <span style="margin-left:6px;">Valor do Treinamento *</span>
                 <div class="dx-field">
-                  <dx-number-box value v-model="evento.total" format="R$ #,##0.##">
+                  <dx-number-box value v-model="participante.valorBase" format="R$ #,##0.##">
                     <dx-validator>
                       <dx-range-rule :min="0" message="Informe o valor total do investimento."/>
                       <dx-compare-rule
@@ -82,6 +89,7 @@
             <div class="col-xs-12 col-sm-5 col-md-4">
               <div class="box">
                 <span style="margin-left:6px;">Tipo de Negociação *</span>
+                <a style="margin-left:40px;" href="#" @click="this.formTipoNegociacao">adicionar</a>
                 <div class="dx-field">
                   <DxSelectBox
                     :search-enabled="true"
@@ -93,7 +101,7 @@
                     :show-data-before-search="showDataBeforeSearchOption"
                     display-expr="nome"
                     value-expr="id"
-                    v-model="evento.tipoNegociacao_id"
+                    v-model="participante.tipoNegociacao_id"
                   >
                     <dx-validator>
                       <dx-required-rule message="Informe o tipo de negociação."/>
@@ -114,6 +122,7 @@
             <div class="col-xs-12 col-sm-7 col-md-8">
               <div class="box">
                 <span style="margin-left:6px;">Nome</span>
+
                 <div class="dx-field">
                   <DxSelectBox
                     :search-enabled="true"
@@ -126,7 +135,7 @@
                     display-expr="nome"
                     value-expr="id"
                     :value="1"
-                    v-model="evento.consultor_id"
+                    v-model="participante.consultor_id"
                   >
                     <dx-validator>
                       <dx-compare-rule
@@ -147,7 +156,7 @@
                     :show-clear-button="true"
                     placeholder="Selecione"
                     :disabled="false"
-                    v-model="evento.pagarConsultor"
+                    v-model="participante.pagarConsultor"
                     display-expr="value"
                     value-expr="key"
                   >
@@ -172,13 +181,13 @@
                   <dx-number-box
                     :min="0"
                     :max="100"
-                    v-model="evento.percentConsultor"
+                    v-model="participante.percentConsultor"
                     format="#,##0.##"
                   >
                     <dx-validator>
                       <dx-compare-rule
                         :comparison-target="percentConsultorComparison"
-                        message="Informe o percentual de comissão do consultorr"
+                        message="Informe o percentual de comissão do consultor"
                       />
                     </dx-validator>
                   </dx-number-box>
@@ -188,12 +197,12 @@
 
             <div class="col-xs-12 col-sm-4 col-md-4">
               <div class="box">
-                <span style="margin-left:6px;margin-right:6px;">Valor</span>
+                <span style="margin-left:6px;margin-right:16px;">Valor</span>
                 <a href="#" @click="this.calcularComissaoConsultor">Calcular</a>
 
                 <div class="dx-field">
                   <dx-number-box
-                    v-model="evento.valorConsultor"
+                    v-model="participante.valorConsultor"
                     format="R$ #,##0.##"
                     ref="valorConsultorRef"
                   >
@@ -213,7 +222,7 @@
           <div class="row end-xs" style="margin-top:32px;margin-bottom: 25px;">
             <div class="col-xs-12">
               <div class="box">
-                <dx-button text="Gravar" @click="validate"/>
+                <dx-button text="Gravar" type="success" @click="validate"/>
                 <dx-button text="Cancelar" style="margin-left:8px;" @click="cancelar"/>
               </div>
             </div>
@@ -222,10 +231,67 @@
         <dx-validation-summary/>
       </dx-scroll-view>
     </div>
+
+    <dx-popup
+      :visible.sync="popupPessoaVisible"
+      :drag-enabled="true"
+      :close-on-outside-click="false"
+      :show-title="true"
+      class="popup"
+      title
+      titleTemplate="<div style='padding: 5px;'><b>Cadastro de Pessoa (adicionar)</b></div>"
+      :fullScreen="popupFullScreen"
+      content-template="myContent"
+      :maxWidth="isPopupMaxWidth"
+      :maxHeight="isPopupMaxHeight"
+    >
+      <div slot="myContent" slot-scope="data">
+        <dx-scroll-view>
+          <!-- Your content goes here -->
+          <FormAluno :isPopup="true" :isTitle="false" @close="popupPessoaVisible= $event"/>
+        </dx-scroll-view>
+      </div>
+
+      <!--<div class="dx-card responsive-paddings"></div>
+      
+      <p>Popup content</p>-->
+    </dx-popup>
+
+    <dx-popup
+      :visible.sync="popupTipoNegociacaoVisible"
+      :drag-enabled="true"
+      :close-on-outside-click="false"
+      :show-title="true"
+      class="popup"
+      title
+      titleTemplate="<div style='padding: 5px;'><b>Cadastro de Tipo de Negociação (adicionar)</b></div>"
+      :fullScreen="popupFullScreen"
+      content-template="myContent"
+      :maxWidth="600"
+      :maxHeight="350"
+    >
+      <div slot="myContent" slot-scope="data">
+        <dx-scroll-view>
+          <!-- Your content goes here -->
+          <FormTipoNegociacao
+            :isPopup="true"
+            :isTitle="false"
+            @close="refreshTipoNegociacao();popupTipoNegociacaoVisible= $event"
+          />
+        </dx-scroll-view>
+      </div>
+
+      <!--<div class="dx-card responsive-paddings"></div>
+      
+      <p>Popup content</p>-->
+    </dx-popup>
   </div>
 </template>
 
 <script>
+import FormAluno from "../pessoa/pessoa";
+//import TipoNegociacao from "./TipoNegociacao";
+import FormTipoNegociacao from "../tipoNegociacao/tipoNegociacao";
 import notify from "devextreme/ui/notify";
 import config from "devextreme/core/config";
 import { userKey, baseApiUrl, loading } from "@/global";
@@ -235,6 +301,9 @@ import { confirm } from "devextreme/ui/dialog";
 import CustomStore from "devextreme/data/custom_store";
 import DataSource from "devextreme/data/data_source";
 import Service from "../../services/Pessoa";
+import ServiceTipo from "../../services/Treinamento";
+import ServiceTipoNegociacao from "../../services/TipoNegociacao";
+import DxPopup from "devextreme-vue/popup";
 
 import {
   DxAdapter,
@@ -354,8 +423,13 @@ import Pessoa from "../../services/Pessoa";
 import { isNull } from "util";
 import { constants } from "crypto";
 
+import ServiceEvento from "../../services/Evento";
+
 export default {
   components: {
+    FormAluno,
+    FormTipoNegociacao,
+    DxPopup,
     DxTextArea,
     DxCheckBox,
     DxSelectBox,
@@ -384,10 +458,7 @@ export default {
       type: Boolean,
       default: true
     },
-    id: {
-      type: {}
-    },
-    evento: {
+    participante: {
       type: Object,
       default: {}
     },
@@ -395,10 +466,6 @@ export default {
       type: Array,
       default: []
     }
-  },
-
-  mounted() {
-    window.me = this;
   },
 
   created() {
@@ -426,19 +493,25 @@ export default {
       minSearchLengthOption: 3,
       showDataBeforeSearchOption: false,
 
+      popupPessoaVisible: false,
+      popupTipoNegociacaoVisible: false,
+      popupFullScreen: false,
+      isPopupMaxWidth: "1400",
+      isPopupMaxHeight: "1000",
+
       pagarConsultorComparison: e => {
-        let pagar = _.isUndefined(this.evento.pagarConsultor)
+        let pagar = _.isUndefined(this.participante.pagarConsultor)
           ? null
-          : this.evento.pagarConsultor;
+          : this.participante.pagarConsultor;
         let nulo =
-          _.isNull(this.evento.pagarConsultor) ||
-          _.isUndefined(this.evento.pagarConsultor);
-        let valor = _.isUndefined(this.evento.valorConsultor)
+          _.isNull(this.participante.pagarConsultor) ||
+          _.isUndefined(this.participante.pagarConsultor);
+        let valor = _.isUndefined(this.participante.valorConsultor)
           ? 0.0
-          : this.evento.valorConsultor;
-        let percentual = _.isUndefined(this.evento.percentConsultor)
+          : this.participante.valorConsultor;
+        let percentual = _.isUndefined(this.participante.percentConsultor)
           ? 0.0
-          : this.evento.percentConsultor;
+          : this.participante.percentConsultor;
 
         if (nulo) return true;
 
@@ -461,15 +534,15 @@ export default {
         return pagar;
       },
       valorConsultorComparison: () => {
-        let pagar = _.isUndefined(this.evento.pagarConsultor)
+        let pagar = _.isUndefined(this.participante.pagarConsultor)
           ? null
-          : this.evento.pagarConsultor;
-        let valor = _.isUndefined(this.evento.valorConsultor)
+          : this.participante.pagarConsultor;
+        let valor = _.isUndefined(this.participante.valorConsultor)
           ? 0.0
-          : this.evento.valorConsultor;
-        let percentual = _.isUndefined(this.evento.percentConsultor)
+          : this.participante.valorConsultor;
+        let percentual = _.isUndefined(this.participante.percentConsultor)
           ? 0.0
-          : this.evento.percentConsultor;
+          : this.participante.percentConsultor;
 
         if (pagar && percentual > 0 && valor > 0) {
           return valor;
@@ -482,15 +555,15 @@ export default {
         return valor;
       },
       percentConsultorComparison: () => {
-        let pagar = _.isUndefined(this.evento.pagarConsultor)
+        let pagar = _.isUndefined(this.participante.pagarConsultor)
           ? null
-          : this.evento.pagarConsultor;
-        let valor = _.isUndefined(this.evento.valorConsultor)
+          : this.participante.pagarConsultor;
+        let valor = _.isUndefined(this.participante.valorConsultor)
           ? 0.0
-          : this.evento.valorConsultor;
-        let percentual = _.isUndefined(this.evento.percentConsultor)
+          : this.participante.valorConsultor;
+        let percentual = _.isUndefined(this.participante.percentConsultor)
           ? 0.0
-          : this.evento.percentConsultor;
+          : this.participante.percentConsultor;
 
         if (percentual === 0 && valor > 0) {
           return percentual + 1;
@@ -503,15 +576,15 @@ export default {
       },
 
       nomeConsultorComparison: () => {
-        const retorno = this.evento.consultor_id;
+        const retorno = this.participante.consultor_id;
         let nome =
-          _.isUndefined(this.evento.consultor_id) ||
-          _.isNull(this.evento.consultor_id)
+          _.isUndefined(this.participante.consultor_id) ||
+          _.isNull(this.participante.consultor_id)
             ? 0
-            : this.evento.consultor_id;
-        let pagar = _.isUndefined(this.evento.pagarConsultor)
+            : this.participante.consultor_id;
+        let pagar = _.isUndefined(this.participante.pagarConsultor)
           ? null
-          : this.evento.pagarConsultor;
+          : this.participante.pagarConsultor;
 
         if (nome > 0 && pagar) return retorno;
         if (nome === 0 && pagar) return nome - 1;
@@ -520,35 +593,39 @@ export default {
       },
 
       parcelasComparison: () => {
-        const retorno = this.evento.parcelas;
+        const retorno = this.participante.parcelas;
         let parcelas =
-          _.isUndefined(this.evento.parcelas) || _.isNull(this.evento.parcelas)
+          _.isUndefined(this.participante.parcelas) ||
+          _.isNull(this.participante.parcelas)
             ? 0
-            : this.evento.parcelas;
-        let total =
-          _.isUndefined(this.evento.total) || _.isNull(this.evento.total)
+            : this.participante.parcelas;
+        let valorBase =
+          _.isUndefined(this.participante.valorBase) ||
+          _.isNull(this.participante.valorBase)
             ? null
-            : this.evento.total;
+            : this.participante.valorBase;
 
-        if (parcelas > 0 && total > 0) return retorno;
-        if (parcelas === 0 && total > 0) return parcelas - 1;
+        if (parcelas > 0 && valorBase > 0) return retorno;
+        if (parcelas === 0 && valorBase > 0) return parcelas - 1;
 
         return retorno;
       },
 
       totalComparison: () => {
-        const retorno = this.evento.total;
+        const retorno = this.participante.valorBase;
         let parcelas =
-          _.isUndefined(this.evento.parcelas) || _.isNull(this.evento.parcelas)
+          _.isUndefined(this.participante.parcelas) ||
+          _.isNull(this.participante.parcelas)
             ? 0
-            : this.evento.parcelas;
-        let total =
-          _.isUndefined(this.evento.total) || _.isNull(this.evento.total)
+            : this.participante.parcelas;
+        let valorBase =
+          _.isUndefined(this.participante.valorBase) ||
+          _.isNull(this.participante.valorBase)
             ? null
-            : this.evento.total;
+            : this.participante.valorBase;
 
-        if (total > 0 && parcelas > 0) return retorno;
-        if (total === 0 && parcelas > 0) return total - 1;
+        if (valorBase > 0 && parcelas > 0) return retorno;
+        if (valorBase === 0 && parcelas > 0) return valorBase - 1;
 
         return retorno;
       }
@@ -575,28 +652,47 @@ export default {
     }
   },
 
+  watch: {
+    screen: function(tam) {
+      if (tam.isSmall || tam.isXSmall) {
+        this.isPopupMaxWidth = "2000";
+        this.isPopupMaxHeight = "2000";
+        this.popupFullScreen = true;
+      } else {
+        this.popupFullScreen = false;
+        this.isPopupMaxWidth = "900";
+        this.isPopupMaxHeight = "450";
+      }
+    }
+  },
+
   methods: {
     onFechar() {
       if (this.isPopup) this.$emit("close", false);
     },
 
-    calcularComissaoConsultor() {
-      let valor = _.isUndefined(this.evento.valorConsultor)
-        ? 0.0
-        : this.evento.valorConsultor;
-      let percentual = _.isUndefined(this.evento.percentConsultor)
-        ? 0.0
-        : this.evento.percentConsultor;
+    formCliente() {
+      this.popupPessoaVisible = !this.popupPessoaVisible;
+    },
 
-      const valorBase = this.evento.total;
+    formTipoNegociacao() {
+      this.popupTipoNegociacaoVisible = !this.popupTipoNegociacaoVisible;
+    },
+
+    calcularComissaoConsultor() {
+      let valor = _.isUndefined(this.participante.valorConsultor)
+        ? 0.0
+        : this.participante.valorConsultor;
+      let percentual = _.isUndefined(this.participante.percentConsultor)
+        ? 0.0
+        : this.participante.percentConsultor;
+
+      const valorBase = this.participante.valorBase;
 
       if (valorBase <= 0 || percentual <= 0) return;
 
-      let ref = this.$refs.valorConsultorRef;
-      window.ref = ref;
-
-      if (!this.evento.id) {
-        this.evento.valorConsultor = (valorBase * percentual) / 100;
+      if (!this.participante.id) {
+        this.participante.valorConsultor = (valorBase * percentual) / 100;
         this.$forceUpdate();
         return;
       }
@@ -607,10 +703,41 @@ export default {
           "Confirmação"
         );
         result.then(dialogResult => {
-          this.evento.valorConsultor = (valorBase * percentual) / 100;
+          this.participante.valorConsultor = (valorBase * percentual) / 100;
           this.$forceUpdate();
         });
       });
+    },
+
+    refreshTipoNegociacao() {
+      loading();
+      ServiceTipoNegociacao.getTipoNegociacoesIndex({
+        sortSelector: "nome",
+        sortDirection: "desc"
+      })
+        .then(r => {
+          loading();
+          this.tipoNegociacaoList = r.data;
+        })
+        .catch(e => {
+          loading();
+          window.errou = e;
+          console.log(e);
+          const position = {
+            at: "center center",
+            of: "#bloco1"
+          };
+          notify(
+            {
+              message: e,
+              position,
+              width: 300,
+              shading: true
+            },
+            "error",
+            3000
+          );
+        });
     },
 
     validateCustom() {
@@ -618,12 +745,33 @@ export default {
       var result2 = this.validator.validate();
       this.customValueIsNotEmpty = result1.isValid;
       this.customValueIsDigit = result2.isValid;*/
-      if (this.evento.pagarConsultor && valorConsultor === 0) {
+      if (this.participante.pagarConsultor && valorConsultor === 0) {
         console.log("validateCustom .f. ");
         return false;
       }
       console.log("validateCustom .t. ");
       return true;
+    },
+
+    preparar() {
+      let d = _.cloneDeep(this.participante);
+
+      let payload = {
+        consultor_id: d.consultor_id,
+        evento_id: d.evento_id,
+        pagarConsultor: d.pagarConsultor,
+        parcelas: d.parcelas,
+        percentConsultor: d.percentConsultor,
+        pessoa_id: d.pessoa_id,
+        tipoNegociacao_id: d.tipoNegociacao_id,
+        valorBase: d.valorBase,
+        treinamentoConcluido: d.treinamentoConcluido,
+        valorConsultor: d.valorConsultor
+      };
+
+      if (d.id) payload.id = d.id;
+
+      return payload;
     },
 
     validate(params) {
@@ -633,7 +781,17 @@ export default {
       if (result.isValid) {
         // form data is valid
         //params.validationGroup.reset();
-        console.log("passou na validação");
+        console.log("passou na validação ");
+        if (result.isValid) {
+          let payload = this.preparar();
+          if (_.has(payload, "id")) {
+            this.update(payload);
+          } else {
+            this.add(payload);
+          }
+        } else {
+          console.log("falhou na validação");
+        }
       } else {
         console.log("falhou na validação");
       }
@@ -641,6 +799,94 @@ export default {
       /*let result1 = this.$refs.customValidator.instance.validate();
       console.log("validação customizada ", result1);
       console.log(result1.isValid);*/
+    },
+
+    add(payload) {
+      loading();
+      ServiceEvento.addEventoParticipante(payload)
+        .then(r => {
+          loading();
+          this.participante.id = r.id;
+          this.id = r.id;
+          const position = {
+            at: "center center",
+            of: "#bloco1"
+          };
+          notify(
+            {
+              message: "Adicionado com sucesso.",
+              position,
+              width: 300,
+              shading: true
+            },
+            "success",
+            1000
+          );
+          if (this.isPopup) this.$emit("atualizar", true);
+          this.cancelar();
+        })
+        .catch(e => {
+          loading();
+          window.errou = e;
+          console.log(e);
+          const position = {
+            at: "center center",
+            of: "#bloco1"
+          };
+          notify(
+            {
+              message: e,
+              position,
+              width: 300,
+              shading: true
+            },
+            "error",
+            4000
+          );
+        });
+    },
+
+    update(payload) {
+      loading();
+      ServiceEvento.updateEventoParticipante(payload)
+        .then(r => {
+          loading();
+          const position = {
+            at: "center center",
+            of: "#bloco1"
+          };
+          notify(
+            {
+              message: "Atualizado com sucesso",
+              position,
+              width: 300,
+              shading: true
+            },
+            "success",
+            2000
+          );
+          if (this.isPopup) this.$emit("atualizar", true);
+          this.cancelar();
+        })
+        .catch(e => {
+          window.errou = e;
+          console.log(e);
+          loading();
+          const position = {
+            at: "center center",
+            of: "#bloco1"
+          };
+          notify(
+            {
+              message: e,
+              position,
+              width: 300,
+              shading: true
+            },
+            "error",
+            4000
+          );
+        });
     },
 
     cancelar() {

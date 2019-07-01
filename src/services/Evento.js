@@ -12,15 +12,19 @@ import TipoNegociacao from "./TipoNegociacao";
 export default {
   async getEventosIndex(payload) {
     try {
+      const { page, take } = payload;
+      delete payload.page;
+      delete payload.take;
       return axios({
         method: "get",
-        url: `${baseApiUrl}/eventos?page=${payload.skip}&limit=${payload.take}`,
+        url: `${baseApiUrl}/eventos?page=${page}&limit=${take}`,
         responseType: "json",
         params: payload,
         data: {}
       })
         .then(res => {
           let data = res.data;
+          console.log("sobre ", res.data);
           let totalCount = 0;
           // eslint-disable-next-line
           if (_.has(data, "pagination")) {
@@ -163,24 +167,35 @@ export default {
 
   async get(id) {
     // eslint-disable-next-line
-    console.log("Iniciando a promessa.....", id);
+    console.log("Iniciando a promessa - get.....", id);
+    // eslint-disable-next-line
+    console.log("3000");
     return new Promise((resolve, reject) => {
+      // eslint-disable-next-line
+      console.log("3000-a");
+
       Promise.all([
         this.getEvento(id),
         Local.getLocaisIndex({}),
         Treinamento.getTreinamentosIndex({}),
         this.getEventoParticipantes(id),
-        TipoNegociacao.getTipoNegociacaoIndex({
+        TipoNegociacao.getTipoNegociacoesIndex({
           sortSelector: "nome",
           sortDirection: "desc"
         })
       ])
         .then(resultados => {
           // eslint-disable-next-line
+          console.log("3001");
+          // eslint-disable-next-line
           console.log("promise all = ", resultados);
           resolve(resultados);
         })
         .catch(err => {
+          // eslint-disable-next-line
+          console.log("3002");
+          // eslint-disable-next-line
+          console.log("promise all rejeitado = ", resultados);
           reject(err);
         });
     });
@@ -192,7 +207,7 @@ export default {
       Promise.all([
         Local.getLocaisIndex({}),
         Treinamento.getTreinamentosIndex({}),
-        TipoNegociacao.getTipoNegociacaoIndex({
+        TipoNegociacao.getTipoNegociacoesIndex({
           sortSelector: "nome",
           sortDirection: "desc"
         })

@@ -6,7 +6,7 @@ import { baseApiUrl } from "@/global";
 //import notify from "devextreme/ui/notify";
 
 export default {
-  async getTipoNegociacaoIndex(payload) {
+  async getTipoNegociacoesIndex(payload) {
     try {
       return axios({
         method: "get",
@@ -43,7 +43,7 @@ export default {
     }
   },
 
-  async getTipoNegociacoes(ID) {
+  async getTipoNegociacao(ID) {
     try {
       const response = await axios.get(`${baseApiUrl}/tipoNegociacaos/${ID}`);
 

@@ -12,6 +12,9 @@ import simpleLayout from "./layouts/single-card";
 import Pessoas from "./views/pessoa/pessoas";
 import Pessoa from "./views/pessoa/pessoa";
 
+import Receber from "./views/financeiro/receber";
+import Recebers from "./views/financeiro/recebers";
+
 Vue.use(Router);
 
 const router = new Router({
@@ -54,6 +57,28 @@ const router = new Router({
       components: {
         layout: defaultLayout,
         content: Pessoa
+      }
+    },
+
+    {
+      name: "recebers",
+      path: "/recebers",
+      meta: { requiresAuth: true },
+      props: true,
+      components: {
+        layout: defaultLayout,
+        content: Recebers
+      }
+    },
+
+    {
+      name: "receber",
+      path: "/receber/:id",
+      meta: { requiresAuth: true },
+      props: true,
+      components: {
+        layout: defaultLayout,
+        content: Receber
       }
     },
 
@@ -118,6 +143,27 @@ const router = new Router({
       components: {
         layout: defaultLayout,
         content: () => import("./views/treinamento/treinamento")
+      }
+    },
+
+    {
+      path: "/tipoNegociacoes",
+      name: "tipoNegociacoes",
+      meta: { requiresAuth: true },
+      components: {
+        layout: defaultLayout,
+        content: () => import("./views/tipoNegociacao/tipoNegociacoes")
+      }
+    },
+
+    {
+      path: "/tipoNegociacao/:id",
+      name: "tipoNegociacao",
+      meta: { requiresAuth: true },
+      props: true,
+      components: {
+        layout: defaultLayout,
+        content: () => import("./views/tipoNegociacao/tipoNegociacao")
       }
     },
 

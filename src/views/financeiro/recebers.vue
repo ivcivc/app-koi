@@ -1,11 +1,11 @@
 <template>
   <div>
-    <h2 class="content-block">Localizar Treinamentos</h2>
+    <h2 class="content-block">Localizar Recebimentos</h2>
 
     <div class="content-block" id="bloco1">
       <div class="dx-card responsive-paddings">
         <div class="left-side">
-          <div class="dx-field-label" style="width:85px;">INFORME:</div>
+          <div class="dx-field-label" style="width:110px;">LOCALIZAR:</div>
           <dx-select-box
             :data-source="fields"
             :value="fields[0].key"
@@ -13,12 +13,12 @@
             display-expr="text"
             v-model="key"
           />
-          <dx-text-box v-model="value" style="margin-left:6px;"/>
-          <dx-button text="Localizar" @click="onLocalizar" style="margin-left:6px;"/>
+          <dx-text-box v-model="value" style="margin-left:6px;" />
+          <dx-button text="Localizar" @click="onLocalizar" style="margin-left:6px;" />
         </div>
 
         <div class="right-add">
-          <dx-button styling-mode="outlined" @click="onAdd()" icon="add" text="adicionar"/>
+          <dx-button styling-mode="outlined" @click="onAdd()" icon="add" text="adicionar" />
         </div>
 
         <dx-data-grid
@@ -35,33 +35,19 @@
           <!--<dx-paging :page-size="page"/>
             <dx-pager :show-page-size-selector="true" :allowed-page-sizes="pageSizes" :show-info="true"/>
           <dx-editing :allow-updating="true" :popup="{width:700, height:345}" mode="popup"/>-->
-          <dx-filter-row :visible="false" apply-filter="auto"/>
+          <dx-filter-row :visible="false" apply-filter="auto" />
 
-          <!--<dx-column
-            :activeStateEnabled="false"
-            :width="110"
-            :allow-sorting="false"
-            data-field="Ações"
-            cell-template="cellTemplate"
-            :allowEditing="false"
-          />-->
+          <dx-column caption="Ações" :width="110" :buttons="editButtons" type="buttons" />
 
-          <dx-column caption="Ações" :width="110" :buttons="editButtons" type="buttons"/>
+          <dx-column caption="Nome" data-field="receber.pessoa.nome" />
+          <dx-column caption="Vencimento" data-type="date" data-field="payDay" />
+          <dx-column caption="Valor" data-field="value" :format="moedaFormat" />
+          <!--<dx-column caption="Status" data-field="status" />-->
+          <dx-column caption="Status" cell-template="cellTemplate" :allowEditing="false" />
 
-          <dx-column caption="Nome" data-field="nome"/>
-          <dx-column caption="Investimento" data-field="valor" :format="moedaFormat"/>
-          <dx-column caption="Status" data-field="status"/>
-
-          <!--<div slot="cellTemplate" slot-scope="data">
-            <dx-button styling-mode="outlined" @click="onEditClick(data)" icon="edit"/>
-            <dx-button
-              type="normal"
-              text
-              @click="onDeleteClick(data)"
-              icon="trash"
-              style="margin-left:10px;"
-            />
-          </div>-->
+          <div slot="cellTemplate" slot-scope="data">
+            <span>{{statusGrid(data)}}</span>
+          </div>
         </dx-data-grid>
       </div>
     </div>
@@ -72,6 +58,9 @@
 import axios from "axios";
 import { userKey, baseApiUrl, loading } from "@/global";
 import { confirm } from "devextreme/ui/dialog";
+
+import Service from "../../services/Receber";
+import notify from "devextreme/ui/notify";
 
 import {
   DxDataGrid,
@@ -86,18 +75,15 @@ import {
 import CustomStore from "devextreme/data/custom_store";
 import DataSource from "devextreme/data/data_source";
 
+import { locale, loadMessages, formatMessage } from "devextreme/localization";
+
 import { DxSelectBox } from "devextreme-vue";
 import { DxButton, DxTextBox } from "devextreme-vue";
-
-import Service from "../../services/Treinamento";
-import notify from "devextreme/ui/notify";
 
 const dataSource = new DataSource({
   store: new CustomStore({
     key: "id",
-
     load: function(loadOptions) {
-      console.log("rodando o loading - treinamentos....");
       let params = {};
       params.take = loadOptions.take;
       if (loadOptions.skip === 0) {
@@ -121,6 +107,7 @@ const dataSource = new DataSource({
       let sort = null;
 
       if (_.isArray(loadOptions.sort)) {
+        sort = true;
         o["sortSelector"] = loadOptions.sort[0].selector;
         o["sortDirection"] = loadOptions.sort[0].desc ? "DESC" : "ASC";
       }
@@ -129,14 +116,12 @@ const dataSource = new DataSource({
         o.nome = "xxx";
       }
 
-      return Service.getTreinamentosIndex(o);
+      let res = Service.getReceberItemsIndex(o);
+
+      return res;
     }
   })
 });
-
-window.ds = dataSource;
-
-//import DxDataGrid from "devextreme-vue/data-grid";
 
 export default {
   components: {
@@ -154,14 +139,24 @@ export default {
 
   created() {},
 
+  mounted() {
+    window.w = this;
+  },
+
+  computed: {
+    statusTransaction() {
+      const status = this.$store.getters["transaction/statusTransactions"];
+      return status;
+    }
+  },
+
   data() {
     return {
       pattern: /^\(\d{3}\) \d{3}-\d{2}$/i,
-      moedaFormat: {
-        type: "currency",
-        precision: 2
-      },
-      treinamentos: [],
+      moedaFormat: { type: "currency", precision: 2 },
+      recebers: [],
+      fields: [{ key: "nome", text: "NOME" }, { key: "cpf", text: "CPF" }],
+      dataSource: dataSource,
       editButtons: [
         {
           hint: "Editar",
@@ -176,21 +171,16 @@ export default {
           onClick: this.onDeleteClick
         }
       ],
-      fields: [
-        { key: "nome", text: "NOME" },
-        { key: "status", text: "STATUS" }
-      ],
-      dataSource: dataSource,
       remoteOperations: {
         sorting: true,
         paging: true
       },
       paging: {
-        pageSize: 15
+        pageSize: 5
       },
       pager: {
         showPageSizeSelector: true,
-        allowedPageSizes: [15, 20, 25, 30],
+        allowedPageSizes: [5, 10, 15, 20],
         showInfo: true
       },
       key: "nome",
@@ -200,14 +190,10 @@ export default {
   },
 
   methods: {
-    //formatMessage: formatMessage,
-
-    /*initMessages() {
-            loadMessages(ptMessages);
-        },   */
+    formatMessage: formatMessage,
 
     onAdd() {
-      this.$router.push({ name: "treinamento", params: {} });
+      this.$router.push({ path: "/receber/-1", params: { id: -1 } });
     },
 
     onLocalizar() {
@@ -219,28 +205,27 @@ export default {
     },
 
     onEditClick(item) {
-      const id = item.row.data.id;
-      this.$router.push({ name: "treinamento", params: { id } });
+      const id = item.row.data.receber_id;
+      this.$router.push({ path: "/receber/" + id, params: { id } });
     },
 
     onDeleteClick(item) {
-      const id = item.row.data.id;
-
       this.$nextTick(function() {
         let result = confirm(
-          "<div style='margin-left:15px!important;margin-right:15px!important;'><i>Confirma exclusão do treinamento selecionado?</i></div>",
+          "<div style='margin-left:15px!important;margin-right:15px!important;'><i>Confirma exclusão do registro selecionado?</i></div>",
           "Confirmação"
         );
         result.then(dialogResult => {
-          console.log(dialogResult);
           if (!dialogResult) {
             return false;
           }
           loading();
-          Service.deleteTreinamento(id)
-            .then(res => {
+
+          const id = item.row.data.id;
+
+          Service.deletePessoa(id)
+            .then(r => {
               loading();
-              this.dataSource.reload();
               const message = "Excluído com sucesso";
               const position = {
                 at: "center center",
@@ -253,9 +238,10 @@ export default {
                   width: 300,
                   shading: true
                 },
-                "success",
-                1000
+                "error",
+                5000
               );
+              this.dataSource.reload();
             })
             .catch(error => {
               loading();
@@ -273,10 +259,11 @@ export default {
                       shading: true
                     },
                     "error",
-                    4000
+                    3000
                   );
                 });
               } else {
+                console.log("error ", error);
                 const position = {
                   at: "center center",
                   of: "#bloco1"
@@ -289,7 +276,7 @@ export default {
                     shading: true
                   },
                   "error",
-                  4000
+                  5000
                 );
               }
             });
@@ -299,6 +286,12 @@ export default {
 
     optionChanged(e) {
       console.log("optionChanged= ", e);
+    },
+
+    statusGrid(item) {
+      const status = item.data.data.status;
+      const o = this.lodash.find(this.statusTransaction, { name: status });
+      return o.displayName;
     }
   }
 };

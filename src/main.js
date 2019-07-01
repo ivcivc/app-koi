@@ -36,6 +36,13 @@ import "./config/pt-BR";
 import VueLodash from "vue-lodash";
 Vue.use(VueLodash, { name: "lodash" });
 
+import VueMoment from "vue-moment";
+import moment from "moment-timezone";
+
+Vue.use(VueMoment, {
+  moment
+});
+
 Vue.config.productionTip = false;
 Vue.prototype.$appInfo = appInfo;
 

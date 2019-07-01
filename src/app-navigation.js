@@ -29,6 +29,28 @@ export default [
   },
 
   {
+    text: "Financeiro",
+    icon: "money",
+    items: [
+      {
+        text: "Recebimentos",
+        path: "/recebers"
+      }
+    ]
+  },
+
+  {
+    text: "Diversos",
+    icon: "folder",
+    items: [
+      {
+        text: "Tipo de Negociação",
+        path: "/tipoNegociacoes"
+      }
+    ]
+  },
+
+  {
     text: "Administração",
     icon: "preferences",
     items: [

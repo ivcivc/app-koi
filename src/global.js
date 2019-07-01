@@ -2,7 +2,8 @@ import Vue from "vue";
 import store from "./services/store";
 
 export const userKey = "__ivc_capa_user";
-export const baseApiUrl = "http://localhost:3333";
+export const baseApiUrl = "http://localhost:3000";
+//export const baseApiUrl = "http://ivcinformatica-com-br.umbler.net";
 export const baseUrl = window.location.origin;
 
 export function showError(e) {

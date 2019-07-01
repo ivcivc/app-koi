@@ -22,7 +22,6 @@ export const mutations = {
   },
 
   setLoadingVisible(state) {
-    console.log("mutacao");
     state.loadingVisible = !state.loadingVisible;
   },
 
@@ -34,7 +33,6 @@ export const mutations = {
 // Actions
 export const actions = {
   setLoadingVisible({ commit }) {
-    console.log("ação");
     commit("setLoadingVisible");
   },
   setScreen({ commit }, payload) {

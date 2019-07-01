@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2 class="content-block">{{titulo}}</h2>
+    <h2 v-if="isTitle" class="content-block">{{titulo}}</h2>
 
     <div class="right-id" v-if="id">ID # {{id}}</div>
 
@@ -80,7 +80,20 @@ export default {
     DxRangeRule
   },
 
-  props: ["id"],
+  props: {
+    id: {
+      type: ["String", "Numeric"],
+      default: undefined
+    },
+    isPopup: {
+      type: Boolean,
+      default: false
+    },
+    isTitle: {
+      type: Boolean,
+      default: true
+    }
+  },
 
   beforeRouteEnter(to, from, next) {
     //console.log("entrando ", to);
@@ -526,10 +539,6 @@ export default {
     };
   },
 
-  mounted() {
-    console.log("montado....");
-  },
-
   created() {},
 
   methods: {
@@ -569,41 +578,121 @@ export default {
           .then(r => {
             loading();
             const message = "Gravado com sucesso";
-            notify(message, "success", 1000);
+            const position = {
+              at: "center center",
+              of: "#bloco1"
+            };
+            notify(
+              {
+                message: message,
+                position,
+                width: 300,
+                shading: true
+              },
+              "success",
+              2000
+            );
             this.cancelar();
           })
           .catch(error => {
             loading();
             if (_.isArray(error)) {
               error.forEach(i => {
-                notify(i.message, "error", 2000);
+                const position = {
+                  at: "center center",
+                  of: "#bloco1"
+                };
+                notify(
+                  {
+                    message: i.message,
+                    position,
+                    width: 300,
+                    shading: true
+                  },
+                  "error",
+                  4000
+                );
               });
             } else {
-              notify(error, "error", 6000);
+              const position = {
+                at: "center center",
+                of: "#bloco1"
+              };
+              notify(
+                {
+                  message: error,
+                  position,
+                  width: 300,
+                  shading: true
+                },
+                "error",
+                5000
+              );
             }
           });
       } else {
         Service.addPessoa(data)
           .then(r => {
-            loading();
             const message = "Gravado com sucesso";
+            loading();
             notify(message, "success", 1000);
+            const position = {
+              at: "center center",
+              of: "#bloco1"
+            };
+            notify(
+              {
+                message: message,
+                position,
+                width: 300,
+                shading: true
+              },
+              "success",
+              1000
+            );
             this.cancelar();
           })
           .catch(error => {
             loading();
             if (_.isArray(error)) {
               error.forEach(i => {
-                notify(i.message, "error", 2000);
+                const position = {
+                  at: "center center",
+                  of: "#bloco1"
+                };
+                notify(
+                  {
+                    message: i.message,
+                    position,
+                    width: 300,
+                    shading: true
+                  },
+                  "error",
+                  5000
+                );
               });
             } else {
-              notify(error, "error", 6000);
+              const position = {
+                at: "center center",
+                of: "#bloco1"
+              };
+              notify(
+                {
+                  message: error,
+                  position,
+                  width: 300,
+                  shading: true
+                },
+                "error",
+                5000
+              );
             }
           });
       }
     },
 
     cancelar() {
+      if (this.isPopup) return this.$emit("close", false);
       this.$router.push({ name: "pessoas" });
     }
   }

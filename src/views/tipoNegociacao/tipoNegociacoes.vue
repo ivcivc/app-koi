@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2 class="content-block">Localizar Treinamentos</h2>
+    <h2 class="content-block">Localizar Tipo de Negociações</h2>
 
     <div class="content-block" id="bloco1">
       <div class="dx-card responsive-paddings">
@@ -49,15 +49,14 @@
           <dx-column caption="Ações" :width="110" :buttons="editButtons" type="buttons"/>
 
           <dx-column caption="Nome" data-field="nome"/>
-          <dx-column caption="Investimento" data-field="valor" :format="moedaFormat"/>
           <dx-column caption="Status" data-field="status"/>
 
           <!--<div slot="cellTemplate" slot-scope="data">
-            <dx-button styling-mode="outlined" @click="onEditClick(data)" icon="edit"/>
+            <dx-button styling-mode="outlined" @click="onUserEditClick(data)" icon="edit"/>
             <dx-button
               type="normal"
               text
-              @click="onDeleteClick(data)"
+              @click="onUserDeleteClick(data)"
               icon="trash"
               style="margin-left:10px;"
             />
@@ -89,7 +88,7 @@ import DataSource from "devextreme/data/data_source";
 import { DxSelectBox } from "devextreme-vue";
 import { DxButton, DxTextBox } from "devextreme-vue";
 
-import Service from "../../services/Treinamento";
+import Service from "../../services/TipoNegociacao";
 import notify from "devextreme/ui/notify";
 
 const dataSource = new DataSource({
@@ -97,7 +96,7 @@ const dataSource = new DataSource({
     key: "id",
 
     load: function(loadOptions) {
-      console.log("rodando o loading - treinamentos....");
+      console.log("rodando o loading - Negociacoes....");
       let params = {};
       params.take = loadOptions.take;
       if (loadOptions.skip === 0) {
@@ -129,7 +128,7 @@ const dataSource = new DataSource({
         o.nome = "xxx";
       }
 
-      return Service.getTreinamentosIndex(o);
+      return Service.getTipoNegociacoesIndex(o);
     }
   })
 });
@@ -161,7 +160,7 @@ export default {
         type: "currency",
         precision: 2
       },
-      treinamentos: [],
+      negociacoes: [],
       editButtons: [
         {
           hint: "Editar",
@@ -207,7 +206,7 @@ export default {
         },   */
 
     onAdd() {
-      this.$router.push({ name: "treinamento", params: {} });
+      this.$router.push({ name: "tipoNegociacao", params: {} });
     },
 
     onLocalizar() {
@@ -219,8 +218,9 @@ export default {
     },
 
     onEditClick(item) {
+      console.log("editaar ", item.row.data);
       const id = item.row.data.id;
-      this.$router.push({ name: "treinamento", params: { id } });
+      this.$router.push({ name: "tipoNegociacao", params: { id } });
     },
 
     onDeleteClick(item) {
@@ -228,7 +228,7 @@ export default {
 
       this.$nextTick(function() {
         let result = confirm(
-          "<div style='margin-left:15px!important;margin-right:15px!important;'><i>Confirma exclusão do treinamento selecionado?</i></div>",
+          "<div style='margin-left:15px!important;margin-right:15px!important;'><i>Confirma exclusão do tipo de negociação selecionado?</i></div>",
           "Confirmação"
         );
         result.then(dialogResult => {
@@ -237,7 +237,7 @@ export default {
             return false;
           }
           loading();
-          Service.deleteTreinamento(id)
+          Service.deleteTipoNegociacao(id)
             .then(res => {
               loading();
               this.dataSource.reload();

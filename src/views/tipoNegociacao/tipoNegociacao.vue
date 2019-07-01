@@ -1,18 +1,18 @@
 <template>
   <div>
-    <h2 class="content-block">{{titulo}}</h2>
+    <h2 v-if="isTitle" class="content-block">{{titulo}}</h2>
 
     <div class="right-id" v-if="id">ID # {{id}}</div>
 
-    <div class="content-block" id="bloco1">
-      <div class="dx-card responsive-paddings">
+    <div class="content-block">
+      <div class="dx-card responsive-paddings" id="bloco1">
         <div id="form-container">
           <form action="your-action" @submit="handleSubmit($event)" ref="form">
             <dx-form
               id="form"
               :read-only="false"
-              :col-count="2"
-              :form-data.sync="treinamento"
+              :col-count="1"
+              :form-data.sync="TipoNegociacao"
               :show-validation-summary="true"
               :show-colon-after-label="true"
               :on-content-ready="validateForm"
@@ -31,6 +31,7 @@
 </template>
 
 <script>
+import axios from "axios";
 import { userKey, baseApiUrl, loading } from "@/global";
 
 import { DxButton } from "devextreme-vue";
@@ -53,7 +54,7 @@ import {
   DxRangeRule
 } from "devextreme-vue/validator";
 
-import Service from "../../services/Treinamento";
+import Service from "../../services/TipoNegociacao";
 import notify from "devextreme/ui/notify";
 
 export default {
@@ -73,7 +74,21 @@ export default {
     DxStringLengthRule,
     DxRangeRule
   },
-  props: ["id"],
+
+  props: {
+    id: {
+      type: ["String", "Numeric"],
+      default: undefined
+    },
+    isPopup: {
+      type: Boolean,
+      default: false
+    },
+    isTitle: {
+      type: Boolean,
+      default: true
+    }
+  },
 
   beforeRouteEnter(to, from, next) {
     loading();
@@ -82,10 +97,10 @@ export default {
       loading();
       return next();
     }
-    Service.getTreinamento(id)
+    Service.getTipoNegociacao(id)
       .then(r => {
         next(vm => {
-          vm.treinamento = r;
+          vm.TipoNegociacao = r;
           return true;
         });
         loading();
@@ -99,8 +114,8 @@ export default {
   data() {
     const situacoes = ["ATIVO", "INATIVO"];
     return {
-      titulo: "Cadastro de Treinamento",
-      treinamento: {},
+      titulo: "Cadastro de Tipo de Negociação",
+      TipoNegociacao: {},
       buttonOptions: {
         text: "Register",
         type: "success",
@@ -108,7 +123,7 @@ export default {
       },
       validationRules: {
         status: [{ type: "required", message: "Informe o status" }],
-        nome: [{ type: "required", message: "Informe do Treinamento" }]
+        nome: [{ type: "required", message: "Informe do Tipo de Negociacao" }]
       },
       groupedItems: {
         dados: [
@@ -124,14 +139,6 @@ export default {
                 message: "Informe o campo nome."
               }
             ]
-          },
-          {
-            dataField: "valor",
-            label: { text: "Investimento" },
-            editorOptions: {
-              format: "R$ #,##0.##"
-            },
-            editorType: "dxNumberBox"
           },
 
           {
@@ -150,7 +157,7 @@ export default {
             validationRules: [
               {
                 type: "required",
-                message: "Informe o Status do treinamento."
+                message: "Informe o Status do Tipo de Negociação."
               }
             ]
           }
@@ -181,12 +188,12 @@ export default {
 
       loading();
 
-      let data = _.cloneDeep(this.treinamento);
+      let data = _.cloneDeep(this.TipoNegociacao);
 
       console.log("gravar ", data);
 
       if (_.has(data, "id")) {
-        Service.updateTreinamento(data)
+        Service.updateTipoNegociacao(data)
           .then(res => {
             //commit('setUsers', res.data)
             loading();
@@ -244,7 +251,7 @@ export default {
             }
           });
       } else {
-        Service.addTreinamento(data)
+        Service.addTipoNegociacao(data)
           .then(res => {
             console.log(res);
             loading();
@@ -263,6 +270,7 @@ export default {
               "success",
               1000
             );
+
             this.cancelar();
           })
           .catch(error => {
@@ -305,7 +313,8 @@ export default {
     },
 
     cancelar() {
-      this.$router.push({ name: "treinamentos" });
+      if (this.isPopup) return this.$emit("close", false);
+      this.$router.push({ name: "tipoNegociacoes" });
     }
   }
 };

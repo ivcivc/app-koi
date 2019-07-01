@@ -5,5 +5,6 @@
 import * as common from "./common";
 import * as user from "./user";
 import * as treinamento from "./treinamento";
+import * as transaction from "./transaction";
 
-export default { common, user, treinamento };
+export default { common, user, treinamento, transaction };

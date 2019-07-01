@@ -305,17 +305,56 @@ export default {
             console.log("gravando....");
             loading();
             const message = "Gravado com sucesso";
-            notify(message, "success", 1000);
+            const position = {
+              at: "center center",
+              of: "#bloco1"
+            };
+            notify(
+              {
+                message: message,
+                position,
+                width: 300,
+                shading: true
+              },
+              "success",
+              1000
+            );
             this.cancelar();
           })
           .catch(error => {
             loading();
             if (_.isArray(error)) {
               error.forEach(i => {
-                notify(i.message, "error", 2000);
+                const position = {
+                  at: "center center",
+                  of: "#bloco1"
+                };
+                notify(
+                  {
+                    message: i.message,
+                    position,
+                    width: 300,
+                    shading: true
+                  },
+                  "error",
+                  4000
+                );
               });
             } else {
-              notify(error, "error", 6000);
+              const position = {
+                at: "center center",
+                of: "#bloco1"
+              };
+              notify(
+                {
+                  message: error,
+                  position,
+                  width: 300,
+                  shading: true
+                },
+                "error",
+                4000
+              );
             }
           });
       } else {
@@ -324,17 +363,56 @@ export default {
             console.log("gravando....");
             loading();
             const message = "Gravado com sucesso";
-            notify(message, "success", 1000);
+            const position = {
+              at: "center center",
+              of: "#bloco1"
+            };
+            notify(
+              {
+                message: message,
+                position,
+                width: 300,
+                shading: true
+              },
+              "success",
+              2000
+            );
             this.cancelar();
           })
           .catch(error => {
             loading();
             if (_.isArray(error)) {
               error.forEach(i => {
-                notify(i.message, "error", 2000);
+                const position = {
+                  at: "center center",
+                  of: "#bloco1"
+                };
+                notify(
+                  {
+                    message: i.message,
+                    position,
+                    width: 300,
+                    shading: true
+                  },
+                  "error",
+                  4000
+                );
               });
             } else {
-              notify(error, "error", 6000);
+              const position = {
+                at: "center center",
+                of: "#bloco1"
+              };
+              notify(
+                {
+                  message: error,
+                  position,
+                  width: 300,
+                  shading: true
+                },
+                "error",
+                4000
+              );
             }
           });
       }

@@ -3,9 +3,9 @@
     class="home-view dx-content-background"
     data-options="dxContent : { targetPlaceholder: 'content' } "
   >
-    <h2 class="content-block">Cadastro de Eventos</h2>
+    <h2 class="content-block">Cadastro de Evento</h2>
 
-    <div class="content-block">
+    <div class="content-block" id="bloco1">
       <div class="dx-card responsive-paddings">
         <dx-validation-group>
           <dx-tab-panel :items="tabs" :deferRendering="false">
@@ -131,7 +131,7 @@
                   <div class="row">
                     <div class="col-xs-12 col-sm-6 col-md-6">
                       <span
-                        style="margin-left:6px;color:red;"
+                        style="margin-left:6px;color:blue;"
                       >Mostrar este evento no web site para venda? *</span>
                       <div class="dx-field">
                         <dx-select-box
@@ -255,11 +255,11 @@
                 </div>
               </div>
               <div class="dx-card responsive-paddings" v-show="tabParticipantesEnabled">
-                <div class="row end-xs" style="margin-top:-10px;">
+                <div class="row end-xs" style="margin-top:-23px;">
                   <div class="col-xs-10">
                     <dx-button
                       styling-mode="outlined"
-                      @click="onAdd()"
+                      @click="onAddParticipante()"
                       icon="add"
                       text="adicionar"
                     />
@@ -286,7 +286,7 @@
                     :allowEditing="false"
                   />-->
 
-                  <dx-column :width="110" :buttons="editButtons" type="buttons"/>
+                  <dx-column caption="Ações" :width="110" :buttons="editButtons" type="buttons"/>
 
                   <dx-column
                     :width="90"
@@ -311,11 +311,11 @@
 
                   <dx-column :calculate-cell-value="tipoNegociacaoCell" caption="Negociação"/>
                   <dx-column data-field="parcelas" data-type="number" :width="90"/>
-                  <dx-column data-field="total" caption="Valor" :format="moedaFormat"/>
+                  <dx-column data-field="valorBase" caption="Valor" :format="moedaFormat"/>
 
                   <dx-column data-field="status" caption="Status" :width="90"/>
 
-                  <div slot="cellTemplate" slot-scope="data">
+                  <!--<div slot="cellTemplate" slot-scope="data">
                     <dx-button styling-mode="outlined" @click="onUserEditClick(data)" icon="edit"/>
                     <dx-button
                       type="normal"
@@ -324,7 +324,7 @@
                       icon="trash"
                       style="margin-left:10px;"
                     />
-                  </div>
+                  </div>-->
 
                   <dx-check-box
                     :value="data.text"
@@ -362,7 +362,7 @@
     <dx-popup
       :visible.sync="popupVisible"
       :drag-enabled="true"
-      :close-on-outside-click="true"
+      :close-on-outside-click="false"
       :show-title="true"
       class="popup"
       title="Information"
@@ -379,7 +379,8 @@
           :isTitle="false"
           :tipoNegociacaoList="tipoNegociacaoList"
           @close="popupVisible= $event"
-          :evento="evento"
+          @atualizar="refreshParticipantes"
+          :participante="participante"
         />
       </div>
       <!--<div class="dx-card responsive-paddings"></div>
@@ -397,6 +398,8 @@ import config from "devextreme/core/config";
 import { userKey, baseApiUrl, loading } from "@/global";
 
 let tabDisabled = false;
+
+import { confirm } from "devextreme/ui/dialog";
 
 //import EditorHtml from "../../components/editor/html";
 import { DxHtmlEditor, DxToolbar, DxItem } from "devextreme-vue/html-editor";
@@ -502,14 +505,14 @@ export default {
     const id = parseInt(to.params.id);
     console.log("evento id==== ", id);
     if (!id || id === -1) {
-      console.log("ID NÃO encontrado... ");
       ServiceEvento.getNovo()
         .then(r => {
           next(vm => {
             vm.tabParticipantesEnabled = false;
             vm.localList = r[0].data;
             vm.treinametoList = r[1].data;
-            vm.tipoNegociacaoList = r[2];
+            vm.tipoNegociacaoList = r[2].data;
+
             vm.novoRegistro();
             return true;
           });
@@ -526,13 +529,13 @@ export default {
         vm.tabParticipantesEnabled = id > 0 ? true : false;
       });*/
     } else {
-      console.log("ID encontrado... ");
       ServiceEvento.get(id)
         .then(r => {
           next(vm => {
             vm.tabParticipantesEnabled = id > 0 ? true : false;
-            console.log("route ", r);
-            vm.evento = r[0];
+            let evento = r[0];
+            vm.evento = evento;
+
             let participantes = r[3].data;
             participantes.map(e => {
               e.pagarConsultor =
@@ -613,7 +616,7 @@ export default {
           onClick: this.cloneIconClick
         }
       ],
-      moedaFormat: { format: "currency", precision: 2 },
+      moedaFormat: { type: "currency", precision: 2 },
       tabParticipantesEnabled: false,
       tabs: [
         { title: "Informações", template: "tab1" },
@@ -726,14 +729,14 @@ export default {
       return data.treinamentoConcluido ? "SIM" : "NÃO";
     },
 
-    onAdd() {
-      this.evento = {
+    onAddParticipante() {
+      this.participante = {
         consultor_id: null,
-        evento_id: null,
+        evento_id: this.id,
         pessoa_id: null,
-        status: null,
+        status: "ATIVO",
         tipoNegociacao_id: null,
-        total: 0.0,
+        valorBase: this.evento.valorBase,
         treinamentoConcluido: false,
         parcelas: 0,
         pagarConsultor: false,
@@ -747,7 +750,7 @@ export default {
       console.log(item);
       console.log("editaar ", item.row.data);
       const id = item.row.data.id;
-      this.evento = _.cloneDeep(item.row.data);
+      this.participante = _.cloneDeep(item.row.data);
       this.popupVisible = !this.popupVisible;
 
       //this.$router.push({ name: "treinamento", params: { id } });
@@ -757,42 +760,112 @@ export default {
       const id = item.row.data.id;
 
       this.$nextTick(function() {
-        let result = confirm("<i>Confirma exclusão?</i>", "Confirmação");
+        let result = confirm(
+          "<div style='margin-left:15px!important;margin-right:15px!important;'><p>Confirma exclusão do Aluno selecionado?</p></div>",
+          " Confirmação "
+        );
         result.then(dialogResult => {
           console.log(dialogResult);
           if (!dialogResult) {
             return false;
           }
           loading();
-          Service.deleteTreinamento(id)
+          ServiceEvento.deleteEventoParticipante(id)
             .then(res => {
               loading();
-              this.dataSource.reload();
+
+              this.refreshParticipantes();
               const message = "Excluído com sucesso";
-              notify(message, "success", 1000);
+              const position = {
+                at: "center center",
+                of: "#bloco1"
+              };
+              notify(
+                {
+                  message: message,
+                  position,
+                  width: 300,
+                  shading: true
+                },
+                "success",
+                2000
+              );
             })
             .catch(error => {
               loading();
               if (_.isArray(error)) {
                 error.forEach(i => {
-                  notify(i.message, "error", 2000);
+                  const position = {
+                    at: "center center",
+                    of: "#bloco1"
+                  };
+                  notify(
+                    {
+                      message: i.message,
+                      position,
+                      width: 300,
+                      shading: true
+                    },
+                    "error",
+                    4000
+                  );
                 });
               } else {
-                notify(error, "error", 6000);
+                const position = {
+                  at: "center center",
+                  of: "#bloco1"
+                };
+                notify(
+                  {
+                    message: error,
+                    position,
+                    width: 300,
+                    shading: true
+                  },
+                  "error",
+                  4000
+                );
               }
             });
         });
       });
     },
 
+    preparar() {
+      let d = _.cloneDeep(this.evento);
+
+      let payload = {
+        dInicio: d.dInicio,
+        dTermino: d.dTermino,
+        local_id: d.local_id,
+        nome: d.nome,
+        obs: d.obs,
+        siteDetalhes: d.siteDetalhes,
+        siteEvento: d.siteEvento,
+        siteExibir: d.siteExibir,
+        siteParcelas: d.siteParcelas,
+        status: d.status,
+        treinamento_id: d.treinamento_id,
+        valorBase: d.valorBase
+      };
+
+      if (d.id) payload.id = d.id;
+
+      return payload;
+    },
+
     validate(params) {
       console.log("validando... ");
       console.log(params);
       const result = params.validationGroup.validate();
+
       if (result.isValid) {
-        // form data is valid
-        //params.validationGroup.reset();
-        console.log("passou na validação");
+        let payload = this.preparar();
+        if (_.has(payload, "id")) {
+          this.updateEvento(payload);
+        } else {
+          this.addEvento(payload);
+        }
       } else {
         console.log("falhou na validação");
       }
@@ -800,6 +873,128 @@ export default {
 
     cancelar() {
       this.$router.push({ name: "eventos" });
+    },
+
+    addEvento(payload) {
+      loading();
+      ServiceEvento.addEvento(payload)
+        .then(r => {
+          loading();
+          this.evento.id = r.id;
+          this.id = r.id;
+          const position = {
+            at: "center center",
+            of: "#bloco1"
+          };
+          notify(
+            {
+              message: "Gravado com sucesso.",
+              position,
+              width: 300,
+              shading: true
+            },
+            "success",
+            2000
+          );
+          this.$router.push({
+            path: "/evento/" + this.id,
+            params: { id: this.id }
+          });
+        })
+        .catch(e => {
+          loading();
+          window.errou = e;
+          console.log(e);
+          const position = {
+            at: "center center",
+            of: "#bloco1"
+          };
+          notify(
+            {
+              message: e,
+              position,
+              width: 300,
+              shading: true
+            },
+            "error",
+            4000
+          );
+        });
+    },
+
+    updateEvento(payload) {
+      loading();
+      ServiceEvento.updateEvento(payload)
+        .then(r => {
+          loading();
+          const position = {
+            at: "center center",
+            of: "#bloco1"
+          };
+          notify(
+            {
+              message: "Gravado com sucesso.",
+              position,
+              width: 300,
+              shading: true
+            },
+            "success",
+            2000
+          );
+          this.cancelar();
+        })
+        .catch(e => {
+          window.errou = e;
+          console.log(e);
+          loading();
+          const position = {
+            at: "center center",
+            of: "#bloco1"
+          };
+          notify(
+            {
+              message: e,
+              position,
+              width: 300,
+              shading: true
+            },
+            "error",
+            4000
+          );
+        });
+    },
+
+    refreshParticipantes() {
+      this.participante = {};
+      console.log("atualizar inscritos");
+      ServiceEvento.getEventoParticipantes(this.evento.id)
+        .then(d => {
+          let participantes = d.data;
+          participantes.map(e => {
+            e.pagarConsultor = parseInt(e.pagarConsultor) === 1 ? true : false;
+            e.treinamentoConcluido =
+              parseInt(e.treinamentoConcluido) === 1 ? true : false;
+          });
+          this.participantes = participantes;
+        })
+        .catch(e => {
+          loading();
+
+          const position = {
+            at: "center center",
+            of: "#bloco1"
+          };
+          notify(
+            {
+              message: "Ocorreu uma falha ao tentar carregar os participantes.",
+              position,
+              width: 300,
+              shading: true
+            },
+            "error",
+            4000
+          );
+        });
     }
   },
 

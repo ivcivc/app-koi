@@ -32,13 +32,12 @@ const error = err => {
     } else if (400 === err.response.status) {
       // eslint-disable-next-line no-console
       console.log("Axios  - 400 ", err);
-      let res= err.response.data
-      if ( _.has( res, 'errors')) {
-        return reject(res.errors);          
+      let res = err.response.data;
+      if (_.has(res, "errors")) {
+        return reject(res.errors);
       } else {
         return reject(res);
       }
-      
     } else {
       return reject(err);
     }
