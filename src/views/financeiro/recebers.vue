@@ -291,7 +291,10 @@ export default {
     statusGrid(item) {
       const status = item.data.data.status;
       const o = this.lodash.find(this.statusTransaction, { name: status });
-      return o.displayName;
+      if (o) {
+        return o.displayName;
+      }
+      return status;
     }
   }
 };

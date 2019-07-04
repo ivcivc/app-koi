@@ -5,6 +5,7 @@
       :modo="modoItem"
       :status="statusItems"
       :isShowPopup="popupItemVisible"
+      :acoes="acoes"
       @close="popupItemVisible=$event"
       @aplicado="onItemAplicar($event);"
     />
@@ -306,7 +307,7 @@
                 />
                 <dx-column :width="70" data-field="installmentNumber" caption="Parcela" />
                 <dx-column data-field="payDay" data-type="date" caption="Vencimento" />
-                <dx-column data-field="value" caption="Valor" />
+                <dx-column data-field="value" caption="Valor" :format="moedaFormat" />
                 <dx-column :width="60" data-field="brand" />
                 <!--<dx-column :width="125" data-field="status" caption="Status" />-->
 
@@ -327,6 +328,20 @@
                   <dx-select-box :items="['click', 'dblClick']"/>
                 </div>
               </div>-->
+            </div>
+          </div>
+
+          <div class="row end-xs" style="margin-top:32px;margin-bottom: 25px;">
+            <div class="col-xs-12">
+              <div class="box">
+                <span style="color:green ;">EM ABERTO: R$ {{numero(totaisGrid.emAberto)}}</span>
+                <span
+                  style="margin-left:32px;color: blue;"
+                >QUITADO: R$ {{numero(totaisGrid.quitado)}}</span>
+                <span
+                  style="margin-left:32px;color: blue;"
+                >TOTAL: R$ {{numero(totaisGrid.quitado+totaisGrid.emAberto)}}</span>
+              </div>
             </div>
           </div>
 
@@ -406,7 +421,7 @@ import { constants } from "crypto";
 const decimalFormatter = new Intl.NumberFormat("pt-BR", {
   style: "decimal",
   currency: "BRL",
-  minimumFractionDigits: 1,
+  minimumFractionDigits: 2,
   maximumFractionDigits: 2
 });
 
@@ -416,12 +431,9 @@ const dataSourcePessoas = new DataSource({
     key: "id",
 
     byKey: key => {
-      console.log("buscando byKey ", key);
       if (parseInt(key) < 0) {
-        console.log("entrou ");
         return {};
       }
-      console.log("naõ entrou");
       return ServicePessoa.getPessoas(key);
     },
 
@@ -548,6 +560,7 @@ export default {
     const dsPessoa = dataSourcePessoas;
 
     return {
+      moedaFormat: { type: "currency", precision: 2 },
       modo: parseInt(this.$route.params.id) > 0 ? 2 : 1,
       modoItem: 0,
 
@@ -557,6 +570,8 @@ export default {
       items: [],
 
       item: {},
+
+      acoes: { editarData: false, editarValor: false, gravarManual: false },
 
       statusMeioPgto: [
         { key: "galaxpay", value: "GALAXPAY" },
@@ -617,26 +632,63 @@ export default {
         let total = this.receber.value;
 
         if (!liquido) {
-          console.log(2);
           return 1;
         }
 
         if (liquido - desconto <= 0) {
-          console.log(3);
           return false;
         }
 
         if (liquido === 0) {
-          console.log(4);
           return -1;
         }
-        console.log(5);
         return liquido;
       }
     };
   },
 
   computed: {
+    totaisGrid: function() {
+      const items = this.items;
+      let o = { emAberto: 0.0, quitado: 0.0 };
+      items.forEach(e => {
+        const status = e.status;
+        switch (status) {
+          case "captured":
+            o.quitado = o.quitado + e.value;
+            break;
+          case "liquidado":
+            o.quitado = o.quitado + e.value;
+            break;
+          case "payExternal": // quitado fora do sistema galaxpay
+            o.quitado = o.quitado + e.value;
+            break;
+          case "transmitir":
+            o.emAberto = o.emAberto + e.value;
+            break;
+          case "emAberto":
+            o.emAberto = o.emAberto + e.value;
+            break;
+          case "notSend":
+            o.emAberto = o.emAberto + e.value;
+            break;
+          case "reversed":
+            o.emAberto = o.emAberto + e.value;
+            break;
+          case "denied":
+            o.emAberto = o.emAberto + e.value;
+            break;
+          case "reversed":
+            o.emAberto = o.emAberto + e.value;
+            break;
+          case "denied":
+            o.emAberto = o.emAberto + e.value;
+            break;
+        }
+      });
+      return o;
+    },
+
     scrollHeight: function() {
       let tam = this.$store.getters["common/screen"];
       let n = 370;
@@ -704,12 +756,10 @@ export default {
     },
 
     total: function(t) {
-      console.log("total ", t);
       this.receber.value = t;
     },
 
     id: function(e) {
-      console.log("watch modo ", e);
       this.modo = 1;
       if (e === undefined) {
         this.id = -1;
@@ -722,6 +772,11 @@ export default {
   },
 
   methods: {
+    numero(n) {
+      let nr = decimalFormatter.format(n);
+      return nr;
+    },
+
     onVisibleExcluirGrade(e) {
       console.log("visible ", e);
       if (e.row.data.status === "transmitir") {
@@ -741,6 +796,11 @@ export default {
     },
 
     addItem() {
+      this.acoes = {
+        editarData: false,
+        editarValor: false,
+        gravarManual: true
+      };
       const value = this.receber.value;
       const quantity = this.receber.quantity;
       const meioPgto = this.lodash.isEmpty(this.receber.meioPgto);
@@ -785,8 +845,108 @@ export default {
     onItemEditClick(e) {
       const item = e.row.data;
       this.item = item;
+      if (this.receber.meioPgto === "koi") {
+        this.statusItems = this.statusTransactionKoi;
+      } else {
+        this.statusItems = this.statusTransaction;
+      }
+
       this.modoItem = 2;
+      this.gerarAcaoEdit(item);
       this.popupItemVisible = !this.popupItemVisible;
+    },
+
+    gerarAcaoEdit(item) {
+      let arrStatus = [];
+      let status = item.status;
+      let acoes = {
+        pagarForaSistema: false,
+        naoEnviadoOperadora: false,
+        cancelar: false,
+        editarData: false,
+        editarValor: false,
+        estornar: false,
+        reenviar: false
+      };
+      if (status === "captured") {
+        // Capturada na Operadora
+        acoes = {
+          pagarForaSistema: false,
+          naoEnviadoOperadora: false,
+          cancelar: false,
+          editarData: false,
+          editarValor: false,
+          estornar: true,
+          reenviar: false
+        };
+      }
+      if (status === "reversed") {
+        // Estornada na Operadora
+        acoes = {
+          pagarForaSistema: false,
+          naoEnviadoOperadora: false,
+          cancelar: false,
+          editarData: false,
+          editarValor: false,
+          estornar: false,
+          reenviar: false
+        };
+      }
+      if (status === "notSend") {
+        // Ainda não enviada para operadora
+        acoes = {
+          pagarForaSistema: true,
+          naoEnviadoOperadora: false,
+          cancelar: true,
+          editarData: true,
+          editarValor: true,
+          estornar: false,
+          reenviar: false
+        };
+      }
+      if (status === "denied") {
+        // Negada na Operadora
+        acoes = {
+          pagarForaSistema: true,
+          naoEnviadoOperadora: false,
+          cancelar: true,
+          editarData: false,
+          editarValor: true,
+          estornar: false,
+          reenviar: true
+        };
+      }
+      if (status === "payExternal") {
+        // Paga fora do sistema
+        acoes = {
+          pagarForaSistema: false,
+          naoEnviadoOperadora: true,
+          cancelar: false,
+          editarData: false,
+          editarValor: true,
+          estornar: false,
+          reenviar: false
+        };
+      }
+      if (status === "cancel") {
+        // Cancelada manualmente
+        acoes = {
+          pagarForaSistema: false,
+          naoEnviadoOperadora: false,
+          cancelar: false,
+          editarData: false,
+          editarValor: false,
+          estornar: false,
+          reenviar: false
+        };
+      }
+      if (this.receber.meioPgto === "koi") {
+        acoes.gravarManual = true;
+      } else {
+        acoes.gravarManual = false;
+      }
+
+      this.acoes = acoes;
     },
 
     onItemAplicar(item) {
@@ -873,7 +1033,10 @@ export default {
           ? this.statusTransactionKoi
           : this.statusTransaction;
       const o = this.lodash.find(arr, { name: status });
-      return o.displayName;
+      if (o) {
+        return o.displayName;
+      }
+      return status;
     },
 
     temItem() {
@@ -897,6 +1060,12 @@ export default {
       return true;
     },
 
+    prepararAdd() {
+      return true;
+    },
+
+    gravarAdd() {},
+
     validate(params) {
       console.log("validando... ");
       console.log(params);
@@ -913,6 +1082,7 @@ export default {
 
           if (this.modo === 1) {
             let result = this.prepararAdd();
+            this.gravarAdd();
             return;
           } else {
             //const
