@@ -10,6 +10,13 @@
       @aplicado="onItemAplicar($event);"
     />
 
+    <FormCartaoCredito
+      :isShowPopup="popupAddCartaoCreditoVisible"
+      :card="card"
+      @aplicado="onCartaoCreditoAplicar($event);"
+      @close="popupAddCartaoCreditoVisible=$event"
+    />
+
     <div class="content-block-title" id="bloco1">
       <div class="row between-xs" style="margin-top:0px;margin-bottom: 0px;">
         <div class="col-xs-7">
@@ -224,14 +231,83 @@
                 </div>
               </div>
             </div>
+
             <div class="col-xs-12 col-sm-3 col-md-3">
-              <!--<dx-button
-                v-show="modo > 0 && receber.value > 0"
-                style="margin-top:25px"
-                text="Gerar parcelas"
-                type="danger"
-                @click="gerar"
-              />-->
+              <div class="box">
+                <span style="margin-left:6px;margin-right:16px;">Valor da parcela *</span>
+                <div class="dx-field">
+                  <dx-number-box
+                    v-model="receber.valorParcela"
+                    format="R$ #,##0.##"
+                    ref="valortotalRef"
+                    :disabled="true"
+                  >
+                    <dx-validator>
+                      <dx-range-rule :min="0" message="Informe o valor da parcela." />
+                    </dx-validator>
+                  </dx-number-box>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="col-xs-12 col-sm-6 col-md-6"
+              v-show="receber.meioPgto==='galaxpay' && modo === 1"
+            >
+              <div class="box">
+                <span
+                  style="margin-left:6px;"
+                  v-show="receber.meioPgto==='galaxpay'"
+                >Cartão de Crédito *</span>
+                <a
+                  style="margin-left:40px;"
+                  href="#"
+                  @click="this.addCartaoCredito"
+                  v-show="receber.meioPgto==='galaxpay' && modo === 1"
+                >adicionar</a>
+                <div class="dx-field">
+                  <dx-select-box
+                    :items="cartaoCreditoList"
+                    :show-clear-button="true"
+                    placeholder="Selecione"
+                    v-model="receber.cardInternalId"
+                    display-expr="description"
+                    value-expr="internalId"
+                    :disabled=" modo===2"
+                    :visible="modo===1 && receber.meioPgto === 'galaxpay'"
+                  >
+                    <dx-validator>
+                      <dx-required-rule message="Informe o cartão de crédito" />
+                    </dx-validator>
+                  </dx-select-box>
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="col-xs-12 col-sm-6 col-md-6"
+              v-show="receber.meioPgto==='galaxpay' && modo === 2"
+            >
+              <div class="box">
+                <span
+                  style="margin-left:6px;"
+                  v-show="receber.meioPgto==='galaxpay'"
+                >Cartão de Crédito *</span>
+                <a
+                  style="margin-left:40px;"
+                  href="#"
+                  @click="this.addCartaoCredito"
+                  v-show="receber.meioPgto==='galaxpay' && modo === 1"
+                >adicionar</a>
+                <div class="dx-field">
+                  <dx-text-box
+                    value.sync="receber.truncatedNumber"
+                    :disabled="true"
+                    v-model="receber.truncatedNumber"
+                    :visible="modo===2 && receber.meioPgto === 'galaxpay'"
+                  ></dx-text-box>
+                </div>
+              </div>
             </div>
           </div>
           <!--
@@ -264,61 +340,63 @@
               </dx-list>
             </div>
           </div>-->
-          <div class="row left-xs" style="margin-left: 0px;margin-top:0px;margin-bottom: 6px;">
-            <dx-button
-              style="margin-top:25px"
-              text="Adicionar"
-              type="normal"
-              @click="addItem"
-              :styling-mode="'outlined'"
-            />
-          </div>
+          <div v-show="modo==1 && receber.meioPgto==='koi' || modo===2">
+            <div class="row left-xs" style="margin-left: 0px;margin-top:0px;margin-bottom: 6px;">
+              <dx-button
+                style="margin-top:25px"
+                text="Adicionar"
+                type="normal"
+                @click="addItem"
+                :styling-mode="'outlined'"
+              />
+            </div>
 
-          <div class="row">
-            <div class="col-xs-12 col-sm-12 col-md-12">
-              <dx-data-grid
-                ref="grid"
-                :data-source="items"
-                :show-borders="true"
-                key-expr="id"
-                :selection="{ mode: 'single' }"
-                :hover-state-enabled="true"
-                @selection-changed="onSelectionChanged"
-                @editorPreparing="onEditorPreparing"
-                @rowInserting="onRowInserted"
-                :rowInserting="addRow"
-              >
-                <!--<dx-editing
+            <div class="row">
+              <div class="col-xs-12 col-sm-12 col-md-12">
+                <dx-data-grid
+                  ref="grid"
+                  :data-source="items"
+                  :show-borders="true"
+                  key-expr="id"
+                  :selection="{ mode: 'single' }"
+                  :hover-state-enabled="true"
+                  @selection-changed="onSelectionChanged"
+                  @editorPreparing="onEditorPreparing"
+                  @rowInserting="onRowInserted"
+                  :rowInserting="addRow"
+                >
+                  <!--<dx-editing
                   :allow-adding="true"
                   :allow-updating="true"
                   :allow-deleting="true"
                   :select-text-on-edit-start="true"
                   :start-edit-action="'click'"
                   mode="batch"
-                />-->
+                  />-->
 
-                <dx-paging :enabled="false" />
-                <dx-column
-                  caption="Ações"
-                  :width="110"
-                  :buttons="editButtons"
-                  ref="btn"
-                  type="buttons"
-                />
-                <dx-column :width="70" data-field="installmentNumber" caption="Parcela" />
-                <dx-column data-field="payDay" data-type="date" caption="Vencimento" />
-                <dx-column data-field="value" caption="Valor" :format="moedaFormat" />
-                <dx-column :width="60" data-field="brand" />
-                <!--<dx-column :width="125" data-field="status" caption="Status" />-->
+                  <dx-paging :enabled="false" />
+                  <dx-column
+                    caption="Ações"
+                    :width="110"
+                    :buttons="editButtons"
+                    ref="btn"
+                    type="buttons"
+                  />
+                  <dx-column :width="70" data-field="installmentNumber" caption="Parcela" />
+                  <dx-column data-field="payDay" data-type="date" caption="Vencimento" />
+                  <dx-column data-field="Desconto" caption="desconto" :format="moedaFormat" />
+                  <dx-column data-field="value" caption="Valor" :format="moedaFormat" />
+                  <dx-column data-field="brand" />
+                  <!--<dx-column :width="125" data-field="status" caption="Status" />-->
 
-                <dx-column caption="Status" cell-template="cellTemplate" :allowEditing="false" />
+                  <dx-column caption="Status" cell-template="cellTemplate" :allowEditing="false" />
 
-                <div slot="cellTemplate" slot-scope="data">
-                  <span>{{statusGrid(data)}}</span>
-                </div>
-              </dx-data-grid>
+                  <div slot="cellTemplate" slot-scope="data">
+                    <span>{{statusGrid(data)}}</span>
+                  </div>
+                </dx-data-grid>
 
-              <!--<div class="options">
+                <!--<div class="options">
                 <div class="caption">Options</div>
                 <div class="option">
                   <dx-check-box text="Select Text on Edit Start"/>
@@ -327,20 +405,21 @@
                   <span>Start Edit Action</span>
                   <dx-select-box :items="['click', 'dblClick']"/>
                 </div>
-              </div>-->
+                </div>-->
+              </div>
             </div>
-          </div>
 
-          <div class="row end-xs" style="margin-top:32px;margin-bottom: 25px;">
-            <div class="col-xs-12">
-              <div class="box">
-                <span style="color:green ;">EM ABERTO: R$ {{numero(totaisGrid.emAberto)}}</span>
-                <span
-                  style="margin-left:32px;color: blue;"
-                >QUITADO: R$ {{numero(totaisGrid.quitado)}}</span>
-                <span
-                  style="margin-left:32px;color: blue;"
-                >TOTAL: R$ {{numero(totaisGrid.quitado+totaisGrid.emAberto)}}</span>
+            <div class="row end-xs" style="margin-top:32px;margin-bottom: 25px;">
+              <div class="col-xs-12">
+                <div class="box">
+                  <span style="color:green ;">EM ABERTO: R$ {{numero(totaisGrid.emAberto)}}</span>
+                  <span
+                    style="margin-left:32px;color: blue;"
+                  >QUITADO: R$ {{numero(totaisGrid.quitado)}}</span>
+                  <span
+                    style="margin-left:32px;color: blue;"
+                  >TOTAL: R$ {{numero(totaisGrid.quitado+totaisGrid.emAberto)}}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -371,10 +450,19 @@
 </template>
 
 <script>
+Number.prototype.toFixedDown = function(digits) {
+  var n = this - Math.pow(10, -digits) / 2;
+  n += n / Math.pow(2, 53);
+  return n.toFixed(digits);
+};
+
+import axios from "axios";
+window.axios = axios;
 import { loading } from "@/global";
 import notify from "devextreme/ui/notify";
 import DxPopup from "devextreme-vue/popup";
 import FormItem from "./receber-item";
+import FormCartaoCredito from "./addCartaoCredito";
 import CustomStore from "devextreme/data/custom_store";
 import DataSource from "devextreme/data/data_source";
 import {
@@ -417,6 +505,7 @@ import ServiceStatusTransction from "../../services/StatusTransaction";
 ServiceStatusTransction.getStatusTransaction();
 
 import { constants } from "crypto";
+import { truncate } from "fs";
 
 const decimalFormatter = new Intl.NumberFormat("pt-BR", {
   style: "decimal",
@@ -494,7 +583,8 @@ export default {
     DxEditing,
     DxLookup,
     FormItem,
-    DxPopup
+    DxPopup,
+    FormCartaoCredito
   },
   props: {
     id1: {
@@ -565,11 +655,16 @@ export default {
       modoItem: 0,
 
       popupItemVisible: false,
+      popupAddCartaoCreditoVisible: false,
 
       dataSourcePessoas: dsPessoa,
       items: [],
 
       item: {},
+
+      card: null,
+
+      cartaoCreditoList: [],
 
       acoes: { editarData: false, editarValor: false, gravarManual: false },
 
@@ -608,6 +703,7 @@ export default {
         desconto: 0.0,
         value: 0.0,
         quantity: 0,
+        valorParcela: 0.0,
         dateFirst: "",
         status: ""
       },
@@ -617,6 +713,7 @@ export default {
         desconto: 0.0,
         value: 0.0,
         quantity: 0,
+        valorParcela: 0.0,
         dateFirst: "",
         status: ""
       },
@@ -707,6 +804,16 @@ export default {
       return n;
     },
 
+    showGrid() {
+      const modo = this.modo;
+      const meio = this.receber.meioPgto;
+      if (modo === 1 && meio === "galaxpay") {
+        return { display: none };
+      } else {
+        return { display: none };
+      }
+    },
+
     total() {
       let total = this.receber.liquido - this.receber.desconto;
       if (total) {
@@ -759,6 +866,27 @@ export default {
       this.receber.value = t;
     },
 
+    "receber.quantity": function(e) {
+      // calcular o valor das parcelas
+      this.calcularValorCadaParcela(this.receber.value);
+    },
+
+    "receber.value": function(e) {
+      // calcular o valor das parcelas
+      this.calcularValorCadaParcela(e);
+    },
+
+    "receber.pessoa_id": function(e) {
+      if (this.modo === 1) {
+        let lista = [];
+        const arr = ServiceReceber.getPessoaCartoes("1ivc").then(r => {
+          r.forEach(e => lista.push(e));
+        });
+
+        this.cartaoCreditoList = lista;
+      }
+    },
+
     id: function(e) {
       this.modo = 1;
       if (e === undefined) {
@@ -772,6 +900,34 @@ export default {
   },
 
   methods: {
+    calcularValorCadaParcela(e) {
+      const totalParcelas = parseInt(this.receber.quantity);
+      let valorParcela = 0;
+
+      if (totalParcelas > 0) {
+        valorParcela = parseFloat((e / totalParcelas).toFixedDown(2));
+        const totalGerado = parseFloat(
+          (valorParcela * totalParcelas).toFixedDown(2)
+        );
+        if (totalGerado < e) {
+          for (let n = 0; n < 15; n++) {
+            valorParcela = valorParcela + 0.01;
+            if (valorParcela * totalParcelas >= e) {
+              n = 100;
+            }
+          }
+        }
+
+        this.receber.valorParcela = valorParcela;
+      } else {
+        this.receber.valorParcela = 0.0;
+      }
+    },
+    addCartaoCredito() {
+      console.log("add card");
+      this.popupAddCartaoCreditoVisible = true;
+    },
+
     numero(n) {
       let nr = decimalFormatter.format(n);
       return nr;
@@ -981,6 +1137,23 @@ export default {
         tid: item.tid,
         value: item.value
       };*/
+    },
+
+    onCartaoCreditoAplicar(card) {
+      this.receber.cardInternalId = null;
+      let cardNovo = {
+        internalId: "_new",
+        brand: card.internalName,
+        truncatedNumber: card.cardNumber,
+        cardCode: card.cardCode,
+        cardName: card.cardName,
+        cardValidate: card.cardValidate,
+        description: card.internalName + " (novo) - " + card.cardNumber
+      };
+
+      this.cartaoCreditoList.push(cardNovo);
+      this.receber.cardInternalId = "_new";
+      this.card = this.lodash.cloneDeep(card);
     },
 
     onSelectionChanged(e) {

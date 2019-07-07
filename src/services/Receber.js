@@ -64,5 +64,36 @@ export default {
       console.error(error);
       return error;
     }
+  },
+
+  async getPessoaCartoes(ID) {
+    try {
+      const response = await axios.get(
+        `${baseApiUrl}/galaxPay/getPessoaCartoes/${ID}`
+      );
+
+      const data = response.data.cards;
+      data.forEach(r => {
+        r.description = r.brand + " - " + r.truncatedNumber;
+      });
+      return data;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+      return error;
+    }
+  },
+
+  async getBandeiras() {
+    try {
+      const response = await axios.get(`${baseApiUrl}/galaxPay/getBandeiras`);
+
+      const data = response.data.brands;
+      return data;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+      return error;
+    }
   }
 };

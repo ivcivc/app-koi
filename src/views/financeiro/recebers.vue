@@ -41,6 +41,7 @@
 
           <dx-column caption="Nome" data-field="receber.pessoa.nome" />
           <dx-column caption="Vencimento" data-type="date" data-field="payDay" />
+          <dx-column caption="Desconto" data-field="desconto" :format="moedaFormat" />
           <dx-column caption="Valor" data-field="value" :format="moedaFormat" />
           <!--<dx-column caption="Status" data-field="status" />-->
           <dx-column caption="Status" cell-template="cellTemplate" :allowEditing="false" />
