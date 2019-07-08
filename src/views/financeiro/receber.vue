@@ -930,6 +930,7 @@ export default {
 
     numero(n) {
       let nr = decimalFormatter.format(n);
+
       return nr;
     },
 
