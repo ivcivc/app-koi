@@ -457,7 +457,6 @@ Number.prototype.toFixedDown = function(digits) {
 };
 
 import axios from "axios";
-window.axios = axios;
 import { loading } from "@/global";
 import notify from "devextreme/ui/notify";
 import DxPopup from "devextreme-vue/popup";
@@ -1144,12 +1143,12 @@ export default {
       this.receber.cardInternalId = null;
       let cardNovo = {
         internalId: "_new",
-        brand: card.internalName,
+        brand: card.brand,
         truncatedNumber: card.cardNumber,
         cardCode: card.cardCode,
         cardName: card.cardName,
         cardValidate: card.cardValidate,
-        description: card.internalName + " (novo) - " + card.cardNumber
+        description: card.brand + " (novo) - " + card.cardNumber
       };
 
       this.cartaoCreditoList.push(cardNovo);

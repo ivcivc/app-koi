@@ -49,7 +49,7 @@
                       display-expr="name"
                       value-expr="internalName"
                       value
-                      v-model="dados.internalName"
+                      v-model="dados.brand"
                     >
                       <dx-validator>
                         <dx-required-rule message="Informe o nome da bandeira do cartão." />
