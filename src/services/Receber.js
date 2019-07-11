@@ -95,5 +95,15 @@ export default {
       console.error(error);
       return error;
     }
+  },
+
+  async addReceber(payload) {
+    console.log("ADD ACIONADO....");
+    try {
+      const response = await axios.post(`${baseApiUrl}/receber`, payload);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   }
 };

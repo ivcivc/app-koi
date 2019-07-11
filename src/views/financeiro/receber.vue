@@ -1213,8 +1213,8 @@ export default {
     },
 
     temItem() {
-      if ( this.receber.meioPgto === 'galaxpay') {
-        return true
+      if (this.receber.meioPgto === "galaxpay") {
+        return true;
       }
       if (this.items.length === 0) {
         const position = {
@@ -1241,7 +1241,32 @@ export default {
     },
 
     gravarAdd() {
-      console.log('receber ', this.receber)
+      console.log("receber ", this.receber);
+      let receber = this.lodash.cloneDeep(this.receber);
+      let card = this.lodash.cloneDeep(this.card);
+      let payload = { receber, card };
+      console.log(payload);
+
+      const resposta = ServiceReceber.addReceber(payload)
+        .then(res => {
+          const position = {
+            at: "center center",
+            of: "#bloco1"
+          };
+          notify(
+            {
+              message: "Conta gerada com sucesso.",
+              position,
+              width: 300,
+              shading: true
+            },
+            "error",
+            3000
+          );
+        })
+        .catch(error => {
+          console.log("erro ", error);
+        });
     },
 
     validate(params) {
