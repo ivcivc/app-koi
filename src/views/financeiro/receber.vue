@@ -1213,6 +1213,9 @@ export default {
     },
 
     temItem() {
+      if ( this.receber.meioPgto === 'galaxpay') {
+        return true
+      }
       if (this.items.length === 0) {
         const position = {
           at: "center center",
@@ -1237,7 +1240,9 @@ export default {
       return true;
     },
 
-    gravarAdd() {},
+    gravarAdd() {
+      console.log('receber ', this.receber)
+    },
 
     validate(params) {
       console.log("validando... ");
