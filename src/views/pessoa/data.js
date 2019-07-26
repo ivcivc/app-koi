@@ -42,7 +42,7 @@ const grupo = [
 
 const estado_civil = ["SOLTEIRO", "CASADO", "UNIÃO ESTÁVEL", "DIVOCIADO"];
 
-const camisas = ["PP", "P", "M", "G", "GG", "XGG"];
+const camisas = ["P", "M", "G", "GG", "EXG"];
 
 const sexos = ["MASCULINO", "FEMININO"];
 

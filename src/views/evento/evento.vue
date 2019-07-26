@@ -40,7 +40,7 @@
                         v-model="evento.status"
                       >
                         <dx-validator>
-                          <dx-required-rule message="Informe o status do evento."/>
+                          <dx-required-rule message="Informe o status do evento." />
                         </dx-validator>
                       </dx-select-box>
                     </div>
@@ -62,7 +62,7 @@
                         v-model="evento.treinamento_id"
                       >
                         <dx-validator>
-                          <dx-required-rule message="Informe o nome do treinamento."/>
+                          <dx-required-rule message="Informe o nome do treinamento." />
                         </dx-validator>
                       </dx-select-box>
                     </div>
@@ -81,7 +81,7 @@
                         v-model="evento.local_id"
                       >
                         <dx-validator>
-                          <dx-required-rule message="Informe o local do evento"/>
+                          <dx-required-rule message="Informe o local do evento" />
                         </dx-validator>
                       </dx-select-box>
                     </div>
@@ -94,7 +94,7 @@
                     <div class="dx-field">
                       <dx-date-box :value="evento.dInicio" type="datetime" v-model="evento.dInicio">
                         <dx-validator>
-                          <dx-required-rule message="Informe a data de início do evento"/>
+                          <dx-required-rule message="Informe a data de início do evento" />
                         </dx-validator>
                       </dx-date-box>
                     </div>
@@ -108,7 +108,7 @@
                         v-model="evento.dTermino"
                       >
                         <dx-validator>
-                          <dx-required-rule message="Informe a data de término do evento"/>
+                          <dx-required-rule message="Informe a data de término do evento" />
                         </dx-validator>
                       </dx-date-box>
                     </div>
@@ -119,7 +119,7 @@
                   <div class="col-xs-12 col-sm-12 col-md-12">
                     <span style="margin-left:6px;">Anotações</span>
                     <div class="dx-field">
-                      <dx-text-area :minHeight="80" :value.sync="evento.obs"/>
+                      <dx-text-area :minHeight="80" :value.sync="evento.obs" />
                     </div>
                   </div>
                 </div>
@@ -208,6 +208,17 @@
                       </div>
                     </div>
                   </div>
+
+                  <div class="row">
+                    <div class="col-xs-12 col-sm-12 col-md-12">
+                      <div class="box">
+                        <span style="margin-left:6px;">Link da imagem *</span>
+                        <div class="dx-field">
+                          <dx-text-box value v-model="evento.siteLink"></dx-text-box>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div style="margin-left: 12px;">
@@ -221,24 +232,24 @@
                     v-model="evento.siteDetalhes"
                   >
                     <dx-toolbar>
-                      <dx-item format-name="undo"/>
-                      <dx-item format-name="redo"/>
-                      <dx-item format-name="separator"/>
-                      <dx-item :format-values="sizeValues" format-name="size"/>
-                      <dx-item :format-values="fontValues" format-name="font"/>
-                      <dx-item format-name="separator"/>
-                      <dx-item format-name="bold"/>
-                      <dx-item format-name="italic"/>
-                      <dx-item format-name="strike"/>
-                      <dx-item format-name="underline"/>
-                      <dx-item format-name="separator"/>
-                      <dx-item format-name="alignLeft"/>
-                      <dx-item format-name="alignCenter"/>
-                      <dx-item format-name="alignRight"/>
-                      <dx-item format-name="alignJustify"/>
-                      <dx-item format-name="separator"/>
-                      <dx-item format-name="color"/>
-                      <dx-item format-name="background"/>
+                      <dx-item format-name="undo" />
+                      <dx-item format-name="redo" />
+                      <dx-item format-name="separator" />
+                      <dx-item :format-values="sizeValues" format-name="size" />
+                      <dx-item :format-values="fontValues" format-name="font" />
+                      <dx-item format-name="separator" />
+                      <dx-item format-name="bold" />
+                      <dx-item format-name="italic" />
+                      <dx-item format-name="strike" />
+                      <dx-item format-name="underline" />
+                      <dx-item format-name="separator" />
+                      <dx-item format-name="alignLeft" />
+                      <dx-item format-name="alignCenter" />
+                      <dx-item format-name="alignRight" />
+                      <dx-item format-name="alignJustify" />
+                      <dx-item format-name="separator" />
+                      <dx-item format-name="color" />
+                      <dx-item format-name="background" />
                     </dx-toolbar>
                   </dx-html-editor>
                 </div>
@@ -286,7 +297,7 @@
                     :allowEditing="false"
                   />-->
 
-                  <dx-column caption="Ações" :width="110" :buttons="editButtons" type="buttons"/>
+                  <dx-column caption="Ações" :width="110" :buttons="editButtons" type="buttons" />
 
                   <dx-column
                     :width="90"
@@ -295,7 +306,7 @@
                     :calculate-cell-value="treinamentoConcluidoCell"
                   />
 
-                  <dx-column data-field="pessoa.nome" caption="Nome"/>
+                  <dx-column data-field="pessoa.nome" caption="Nome" />
                   <dx-column
                     :calculate-cell-value="consultorCell"
                     caption="Consultor"
@@ -309,11 +320,11 @@
                     :calculate-cell-value="pagarConsultorCell"
                   />
 
-                  <dx-column :calculate-cell-value="tipoNegociacaoCell" caption="Negociação"/>
-                  <dx-column data-field="parcelas" data-type="number" :width="90"/>
-                  <dx-column data-field="valorBase" caption="Valor" :format="moedaFormat"/>
+                  <dx-column :calculate-cell-value="tipoNegociacaoCell" caption="Negociação" />
+                  <dx-column data-field="parcelas" data-type="number" :width="90" />
+                  <dx-column data-field="valorBase" caption="Valor" :format="moedaFormat" />
 
-                  <dx-column data-field="status" caption="Status" :width="90"/>
+                  <dx-column data-field="status" caption="Status" :width="90" />
 
                   <!--<div slot="cellTemplate" slot-scope="data">
                     <dx-button styling-mode="outlined" @click="onUserEditClick(data)" icon="edit"/>
@@ -332,14 +343,14 @@
                     slot-scope="{ data }"
                   />
 
-                  <dx-button slot="cell-city" slot-scope="{ data }" :text="data.text"/>
+                  <dx-button slot="cell-city" slot-scope="{ data }" :text="data.text" />
                   <span slot="tag" slot-scope="{ data }" class="New">{{data.text}}</span>
                 </dx-data-grid>
               </div>
             </div>
           </dx-tab-panel>
 
-          <dx-validation-summary/>
+          <dx-validation-summary />
           <dx-button
             text="Gravar"
             type="success"
