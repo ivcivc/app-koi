@@ -98,7 +98,7 @@ export default {
   },
 
   async addReceber(payload) {
-    console.log("ADD ACIONADO....>");
+    // oi
     try {
       const response = await axios.post(`${baseApiUrl}/receber`, payload);
       return response.data;
