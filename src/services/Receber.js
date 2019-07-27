@@ -98,7 +98,6 @@ export default {
   },
 
   async addReceber(payload) {
-    // oi
     try {
       const response = await axios.post(`${baseApiUrl}/receber`, payload);
       return response.data;

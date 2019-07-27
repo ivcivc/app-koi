@@ -28,7 +28,7 @@
                     v-model="participante.pessoa_id"
                   >
                     <dx-validator>
-                      <dx-required-rule message="Informe o nome do Aluno."/>
+                      <dx-required-rule message="Informe o nome do Aluno." />
                     </dx-validator>
                   </DxSelectBox>
                 </div>
@@ -75,7 +75,7 @@
                 <div class="dx-field">
                   <dx-number-box value v-model="participante.valorBase" format="R$ #,##0.##">
                     <dx-validator>
-                      <dx-range-rule :min="0" message="Informe o valor total do investimento."/>
+                      <dx-range-rule :min="0" message="Informe o valor total do investimento." />
                       <dx-compare-rule
                         :comparison-target="totalComparison"
                         message="Informe o valor Total do treinamento."
@@ -104,7 +104,7 @@
                     v-model="participante.tipoNegociacao_id"
                   >
                     <dx-validator>
-                      <dx-required-rule message="Informe o tipo de negociação."/>
+                      <dx-required-rule message="Informe o tipo de negociação." />
                     </dx-validator>
                   </DxSelectBox>
                 </div>
@@ -207,7 +207,7 @@
                     ref="valorConsultorRef"
                   >
                     <dx-validator>
-                      <dx-range-rule :min="0" message="Informe o valor a ser pago ao Consultor."/>
+                      <dx-range-rule :min="0" message="Informe o valor a ser pago ao Consultor." />
                       <dx-compare-rule
                         :comparison-target="valorConsultorComparison"
                         message="Informe o valor a ser pago ao Consultor"
@@ -217,18 +217,40 @@
                 </div>
               </div>
             </div>
+
+            <div class="col-xs-12 col-sm-4 col-md-4">
+              <div class="box">
+                <span style="margin-left:6px;font-weight: bold;">Padrinho</span>
+
+                <div class="dx-field">
+                  <DxSelectBox
+                    :search-enabled="true"
+                    :data-source="padrinhos"
+                    :search-mode="searchModeOption"
+                    :search-expr="searchExprOption"
+                    :search-timeout="searchTimeoutOption"
+                    :min-search-length="minSearchLengthOption"
+                    :show-data-before-search="showDataBeforeSearchOption"
+                    display-expr="nome"
+                    value-expr="id"
+                    :value="1"
+                    v-model="participante.padrinho_id"
+                  ></DxSelectBox>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div class="row end-xs" style="margin-top:32px;margin-bottom: 25px;">
             <div class="col-xs-12">
               <div class="box">
-                <dx-button text="Gravar" type="success" @click="validate"/>
-                <dx-button text="Cancelar" style="margin-left:8px;" @click="cancelar"/>
+                <dx-button text="Gravar" type="success" @click="validate" />
+                <dx-button text="Cancelar" style="margin-left:8px;" @click="cancelar" />
               </div>
             </div>
           </div>
         </dx-validation-group>
-        <dx-validation-summary/>
+        <dx-validation-summary />
       </dx-scroll-view>
     </div>
 
@@ -248,7 +270,7 @@
       <div slot="myContent" slot-scope="data">
         <dx-scroll-view>
           <!-- Your content goes here -->
-          <FormAluno :isPopup="true" :isTitle="false" @close="popupPessoaVisible= $event"/>
+          <FormAluno :isPopup="true" :isTitle="false" @close="popupPessoaVisible= $event" />
         </dx-scroll-view>
       </div>
 
@@ -487,6 +509,7 @@ export default {
       //scrollHeight: "330",
       participantes: dataSource, //[{ id: 1, nome: "Ivan" }],
       consultores: dataSourceConsultor,
+      padrinhos: dataSource,
       searchModeOption: "contains",
       searchExprOption: "nome",
       searchTimeoutOption: 200,
@@ -758,6 +781,7 @@ export default {
 
       let payload = {
         consultor_id: d.consultor_id,
+        padrinho_id: d.padrinho_id,
         evento_id: d.evento_id,
         pagarConsultor: d.pagarConsultor,
         parcelas: d.parcelas,
