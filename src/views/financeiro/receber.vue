@@ -383,10 +383,15 @@
                     type="buttons"
                   />
                   <dx-column :width="70" data-field="installmentNumber" caption="Parcela" />
-                  <dx-column data-field="payDay" data-type="date" caption="Vencimento" />
-                  <dx-column data-field="Desconto" caption="desconto" :format="moedaFormat" />
-                  <dx-column data-field="value" caption="Valor" :format="moedaFormat" />
-                  <dx-column data-field="brand" />
+                  <dx-column data-field="payDay" data-type="date" caption="Vencimento" :width="94" />
+                  <dx-column
+                    data-field="Desconto"
+                    caption="desconto"
+                    :format="moedaFormat"
+                    :width="90"
+                  />
+                  <dx-column data-field="value" caption="Valor" :format="moedaFormat" :width="95" />
+                  <dx-column data-field="brand" :width="60" />
                   <!--<dx-column :width="125" data-field="status" caption="Status" />-->
 
                   <dx-column caption="Status" cell-template="cellTemplate" :allowEditing="false" />
@@ -586,9 +591,9 @@ export default {
     FormCartaoCredito
   },
   props: {
-    id1: {
+    receber_id: {
       type: [String, Number],
-      default: -1
+      default: -3
     },
     isPopup: {
       type: Boolean,
@@ -895,10 +900,40 @@ export default {
       if (parseInt(e) > 0) {
         this.modo = 2;
       }
+    },
+
+    receber_id: function(e) {
+      this.modo = 1;
+      if (e === undefined) {
+        this.id = -1;
+        this.receber = receberDefault;
+        return;
+      }
+      if (parseInt(e) > 0) {
+        this.modo = 2;
+        this.getReceber(e);
+      }
     }
   },
 
   methods: {
+    getReceber(ID) {
+      loading();
+      ServiceReceber.getReceber(ID)
+        .then(r => {
+          r.quantity = parseInt(r.quantity);
+          this.receber = r;
+          this.items = r.receberItems;
+
+          this.id = r.id;
+
+          loading();
+        })
+        .catch(error => {
+          loading();
+        });
+    },
+
     calcularValorCadaParcela(e) {
       const totalParcelas = parseInt(this.receber.quantity);
       let valorParcela = 0;
@@ -1332,8 +1367,11 @@ export default {
     onCancelarConta() {},
 
     cancelar() {
-      if (this.isPopup) this.$emit("close", false);
-      else this.$router.push({ name: "recebers" });
+      if (this.isPopup) {
+        this.$emit("close", false);
+      } else {
+        this.$router.push({ name: "recebers" });
+      }
     }
   }
 };

@@ -92,7 +92,7 @@
                   <div class="col-xs-12 col-sm-6 col-md-6">
                     <span style="margin-left:6px;">Início *</span>
                     <div class="dx-field">
-                      <dx-date-box :value="evento.dInicio" type="datetime" v-model="evento.dInicio">
+                      <dx-date-box :value="evento.dInicio" type="date" v-model="evento.dInicio">
                         <dx-validator>
                           <dx-required-rule message="Informe a data de início do evento" />
                         </dx-validator>
@@ -102,11 +102,7 @@
                   <div class="col-xs-12 col-sm-6 col-md-6">
                     <span style="margin-left:6px;">Término *</span>
                     <div class="dx-field">
-                      <dx-date-box
-                        :value="evento.dTermino"
-                        type="datetime"
-                        v-model="evento.dTermino"
-                      >
+                      <dx-date-box :value="evento.dTermino" type="date" v-model="evento.dTermino">
                         <dx-validator>
                           <dx-required-rule message="Informe a data de término do evento" />
                         </dx-validator>
@@ -297,10 +293,12 @@
                     :allowEditing="false"
                   />-->
 
-                  <dx-column caption="Ações" :width="110" :buttons="editButtons" type="buttons" />
+                  <dx-column caption="Ações" :width="80" :buttons="editButtons" type="buttons" />
+
+                  <dx-column data-field="receberStatus" caption="Receber" alignment="left"></dx-column>
 
                   <dx-column
-                    :width="90"
+                    :width="82"
                     data-field="treinamentoConcluido"
                     caption="Certificado"
                     :calculate-cell-value="treinamentoConcluidoCell"
@@ -314,17 +312,35 @@
                   ></dx-column>
 
                   <dx-column
-                    :width="90"
+                    :width="60"
                     data-field="pagarConsultor"
                     caption="Pagar?"
                     :calculate-cell-value="pagarConsultorCell"
                   />
 
                   <dx-column :calculate-cell-value="tipoNegociacaoCell" caption="Negociação" />
-                  <dx-column data-field="parcelas" data-type="number" :width="90" />
-                  <dx-column data-field="valorBase" caption="Valor" :format="moedaFormat" />
+                  <dx-column data-field="parcelas" data-type="number" :width="66" />
+                  <dx-column
+                    data-field="valorBase"
+                    :width="110"
+                    caption="Valor"
+                    :format="moedaFormat"
+                  />
 
                   <dx-column data-field="status" caption="Status" :width="90" />
+
+                  <dx-column caption :width="45" :buttons="editButtonsExcluir" type="buttons" />
+
+                  <div slot="receberStatus" slot-scope="{ data }">
+                    <template v-if="data.data.receberStatus.length > 0">
+                      <a
+                        id="aStatus"
+                        href="#"
+                        @click.prevent="botaoReceberGrid(data);"
+                      >{{data.data.receberStatus}}</a>
+                    </template>
+                    <div>{{data.data.receberStatus}}</div>
+                  </div>
 
                   <!--<div slot="cellTemplate" slot-scope="data">
                     <dx-button styling-mode="outlined" @click="onUserEditClick(data)" icon="edit"/>
@@ -369,6 +385,37 @@
         </dx-validation-group>
       </div>
     </div>
+
+    <dx-popup
+      :visible.sync="popupReceberVisible"
+      :drag-enabled="true"
+      :close-on-outside-click="false"
+      :show-title="true"
+      class="popup"
+      title
+      titleTemplate="<div style='padding: 5px;'><b>Cadastro de Contas a Receber</b></div>"
+      :fullScreen="popupFullScreen"
+      content-template="myContent"
+      :maxWidth="990"
+      :maxHeight="850"
+      :deferRendering="false"
+    >
+      <div slot="myContent" slot-scope="data">
+        <dx-scroll-view>
+          <!-- Your content goes here -->
+          <FormReceber
+            :isPopup="true"
+            :isTitle="false"
+            :receber_id="receber_id"
+            @close="popupReceberVisible= $event;receber_id=-2"
+          />
+        </dx-scroll-view>
+      </div>
+
+      <!--<div class="dx-card responsive-paddings"></div>
+      
+      <p>Popup content</p>-->
+    </dx-popup>
 
     <dx-popup
       :visible.sync="popupVisible"
@@ -426,7 +473,8 @@ import {
   DxDateBox,
   DxNumberBox,
   DxButton,
-  DxTextBox
+  DxTextBox,
+  DxScrollView
 } from "devextreme-vue";
 import DxTabPanel from "devextreme-vue/tab-panel";
 
@@ -466,6 +514,7 @@ import { DxTooltip } from "devextreme-vue/tooltip";
 import DxPopup from "devextreme-vue/popup";
 
 import FormParticipante from "./evento-participante";
+import FormReceber from "../financeiro/receber";
 //import FormParticipante from "../pessoa/pessoa";
 
 const textBoxRefName = "some-ref-name";
@@ -506,7 +555,9 @@ export default {
     DxSelection,
     DxTooltip,
     FormParticipante,
-    DxPopup
+    DxPopup,
+    FormReceber,
+    DxScrollView
   },
 
   props: ["id2"],
@@ -553,6 +604,11 @@ export default {
                 parseInt(e.pagarConsultor) === 1 ? true : false;
               e.treinamentoConcluido =
                 parseInt(e.treinamentoConcluido) === 1 ? true : false;
+              if (vm.lodash.isNull(e.receber)) {
+                e.receberStatus = "";
+              } else {
+                e.receberStatus = e.receber.status;
+              }
             });
             vm.participantes = participantes;
 
@@ -578,11 +634,14 @@ export default {
     return {
       id: this.$route.params.id,
       popupVisible: false,
+      popupReceberVisible: false,
       popupFullScreen: false,
       isPopupMaxWidth: "900",
       isPopupMaxHeight: "450",
       gridRefName: "grid",
       selectedRowIndex: -1,
+      receber_id: -5,
+
       animationConfig: {
         show: {
           type: "slide",
@@ -615,16 +674,18 @@ export default {
           onClick: this.onParticipanteEditClick
         },
         {
+          hint: "Contas a Receber",
+          icon: "money",
+          visible: this.onReceberVisible,
+          onClick: this.onReceberEditClick
+        }
+      ],
+      editButtonsExcluir: [
+        {
           hint: "Excluir",
           icon: "trash",
-          visible: true,
+          visible: this.onExcluirVisible,
           onClick: this.onParticipanteDeleteClick
-        },
-        {
-          hint: "Clone",
-          icon: "repeat",
-          visible: this.isCloneIconVisible,
-          onClick: this.cloneIconClick
         }
       ],
       moedaFormat: { type: "currency", precision: 2 },
@@ -677,8 +738,22 @@ export default {
   },
 
   methods: {
+    onReceberVisible(e) {
+      // botao receber grade participantes
+      return true;
+    },
+
+    onExcluirVisible(e) {
+      // botao excluir da grade participantes.
+      return e.row.data.receberStatus.length === 0;
+    },
+
     setFocus: function() {
       this.textBox.focus();
+    },
+
+    botaoReceberGrid(data) {
+      console.log("botao : ", data);
     },
 
     novoRegistro() {
@@ -765,6 +840,20 @@ export default {
       this.popupVisible = !this.popupVisible;
 
       //this.$router.push({ name: "treinamento", params: { id } });
+    },
+
+    onReceberEditClick(item) {
+      // Grid - botão conta receber
+      let id = -1;
+      this.receber = _.cloneDeep(item.row.data.receber);
+      if (this.receber) {
+        id = item.row.data.receber.id;
+        this.receber_id = this.receber.id;
+      } else {
+        this.receber_id = -1;
+      }
+
+      this.popupReceberVisible = !this.popupReceberVisible;
     },
 
     onParticipanteDeleteClick(item) {
@@ -985,6 +1074,11 @@ export default {
             e.pagarConsultor = parseInt(e.pagarConsultor) === 1 ? true : false;
             e.treinamentoConcluido =
               parseInt(e.treinamentoConcluido) === 1 ? true : false;
+            if (this.lodash.isNull(e.receber)) {
+              e.receberStatus = "";
+            } else {
+              e.receberStatus = e.receber.status;
+            }
           });
           this.participantes = participantes;
         })
@@ -1043,6 +1137,17 @@ export default {
 </script>
 
 <style>
+#aStatus {
+  background-color: transparent;
+  border: 0;
+  color: #ffffff;
+  cursor: pointer;
+  display: inline-block;
+  padding: 0;
+  position: relative;
+  text-decoration: underline;
+}
+
 .bloco {
   padding: 15px;
 }

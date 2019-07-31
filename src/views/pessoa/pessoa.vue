@@ -17,22 +17,22 @@
               :show-colon-after-label="true"
               :on-content-ready="validateForm"
             >
-              <dx-item :items="groupedItems.systemInformation" item-type="group" caption/>
-              <dx-item :items="groupedItems.dadosPessoais" item-type="group" caption/>
-              <dx-item :items="groupedItems.endereco" item-type="group" caption="Endereço"/>
+              <dx-item :items="groupedItems.systemInformation" item-type="group" caption />
+              <dx-item :items="groupedItems.dadosPessoais" item-type="group" caption />
+              <dx-item :items="groupedItems.endereco" item-type="group" caption="Endereço" />
               <dx-item
                 :items="groupedItems.contato"
                 item-type="group"
                 caption="Contato"
                 :col-span="1"
               />
-              <dx-item :items="groupedItems.tipoPessoa" item-type="group" caption :col-span="1"/>
-              <dx-item :items="groupedItems.situacao" item-type="group" caption :col-span="1"/>
+              <dx-item :items="groupedItems.tipoPessoa" item-type="group" caption :col-span="1" />
+              <dx-item :items="groupedItems.situacao" item-type="group" caption :col-span="1" />
             </dx-form>
           </form>
           <div style="float: left; margin-top:20px">
-            <dx-button text="Gravar" type="success" @click="gravar" style="margin-right:10px"/>
-            <dx-button text="Cancelar" @click="cancelar"/>
+            <dx-button text="Gravar" type="success" @click="gravar" style="margin-right:10px" />
+            <dx-button text="Cancelar" @click="cancelar" />
           </div>
         </div>
       </div>
@@ -94,6 +94,15 @@ export default {
       default: true
     }
   },
+
+  /*watch: {
+    id: function(e) {
+      console.log("watch executando....");
+      if (!this.lodash.isNull(e)) {
+        this.getID(e);
+      }
+    }
+  },*/
 
   beforeRouteEnter(to, from, next) {
     //console.log("entrando ", to);
@@ -546,6 +555,19 @@ export default {
       e.preventDefault();
 
       return;
+    },
+
+    getID(id) {
+      loading();
+      Service.getPessoas(id)
+        .then(r => {
+          this.pessoa = r;
+          loading();
+        })
+        .catch(error => {
+          loading();
+          this.pessoa = {};
+        });
     },
 
     validateForm(e) {

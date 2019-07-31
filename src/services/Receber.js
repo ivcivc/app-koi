@@ -86,7 +86,7 @@ export default {
 
   async getBandeiras() {
     try {
-      const response = await axios.get(`${baseApiUrl}/galaxPay/getBandeiras`);
+      const response = await axios.get(`${baseApiUrl}/site/getBandeiras`);
 
       const data = response.data.brands;
       return data;

@@ -246,7 +246,7 @@ export default {
       this.showDisabled = e.id <= 0 ? false : true;
       this.showData = this.acoes.editarData ? true : false;
       this.showValor = this.acoes.editarValor ? true : false;
-      if (item.meioPgto === "koi") {
+      if (this.receber.meioPgto === "koi") {
         this.showStatus = true;
       } else {
         this.showStatus = false;
