@@ -17,12 +17,12 @@
               :show-colon-after-label="true"
               :on-content-ready="validateForm"
             >
-              <dx-item :items="groupedItems.dados" item-type="group" caption/>
+              <dx-item :items="groupedItems.dados" item-type="group" caption />
             </dx-form>
           </form>
           <div style="float: left; margin-top:20px">
-            <dx-button text="Gravar" type="success" @click="gravar" style="margin-right:10px"/>
-            <dx-button text="Cancelar" @click="cancelar"/>
+            <dx-button text="Gravar" type="success" @click="gravar" style="margin-right:10px" />
+            <dx-button text="Cancelar" @click="cancelar" />
           </div>
         </div>
       </div>
@@ -126,12 +126,28 @@ export default {
             ]
           },
           {
-            dataField: "valor",
-            label: { text: "Investimento" },
+            dataField: "valorBaseAVista",
+            label: { text: "Valor à vista" },
             editorOptions: {
               format: "R$ #,##0.##"
             },
             editorType: "dxNumberBox"
+          },
+
+          {
+            dataField: "valor",
+            label: { text: "Valor à prazo" },
+            editorOptions: {
+              format: "R$ #,##0.##"
+            },
+            editorType: "dxNumberBox",
+            validationRules: [
+              {
+                type: "compare",
+                comparisonTarget: "validadarValorPrazo",
+                message: "Informe o Status do treinamento."
+              }
+            ]
           },
 
           {
@@ -160,6 +176,10 @@ export default {
   },
 
   methods: {
+    validadarValorPrazo: () => {
+      return 100;
+    },
+
     handleSubmit(e) {
       e.preventDefault();
 
