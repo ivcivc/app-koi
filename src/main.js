@@ -43,6 +43,10 @@ Vue.use(VueMoment, {
   moment
 });
 
+import VueSmartWidget from "vue-smart-widget";
+
+Vue.use(VueSmartWidget);
+
 Vue.config.productionTip = false;
 Vue.prototype.$appInfo = appInfo;
 

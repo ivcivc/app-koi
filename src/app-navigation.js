@@ -40,6 +40,20 @@ export default [
   },
 
   {
+    text: "Prospecção",
+    icon: "folder",
+
+    path: "/prospeccao"
+  },
+
+  {
+    text: "Mala Direta",
+    icon: "mention",
+
+    path: "/mala-direta"
+  },
+
+  {
     text: "Diversos",
     icon: "folder",
     items: [

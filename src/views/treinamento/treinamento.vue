@@ -11,13 +11,50 @@
             <dx-form
               id="form"
               :read-only="false"
-              :col-count="2"
               :form-data.sync="treinamento"
               :show-validation-summary="true"
               :show-colon-after-label="true"
+              validation-group="customerData"
               :on-content-ready="validateForm"
             >
-              <dx-item :items="groupedItems.dados" item-type="group" caption />
+              <dx-group-item>
+                <dx-simple-item data-field="nome">
+                  <dx-required-rule message="Informe o nome do treinamento" />
+                </dx-simple-item>
+
+                <dx-simple-item
+                  data-field="valorBaseAVista"
+                  editor-type="dxNumberBox"
+                  :editorOptions="optionFormatoMoeda"
+                >
+                  <dx-label text="Valor à vista" />
+                  <dx-required-rule message="Informe o valor do treinamento à vista" />
+                  <dx-compare-rule
+                    :comparison-target="valorAVistaComparison"
+                    message="Valor à vista não permitido."
+                  />
+                </dx-simple-item>
+                <dx-simple-item
+                  data-field="valor"
+                  editor-type="dxNumberBox"
+                  :editorOptions="optionFormatoMoeda"
+                >
+                  <dx-label text="Valor à prazo" />
+                  <dx-required-rule message="Informe o valor do treinamento à prazo" />
+                  <dx-compare-rule
+                    :comparison-target="valorComparison"
+                    message="Valor à prazo não permitido"
+                  />
+                </dx-simple-item>
+
+                <dx-simple-item
+                  :editor-options="statusEditorOptions"
+                  data-field="status"
+                  editor-type="dxSelectBox"
+                >
+                  <dx-required-rule message="Informe o status" />
+                </dx-simple-item>
+              </dx-group-item>
             </dx-form>
           </form>
           <div style="float: left; margin-top:20px">
@@ -34,44 +71,40 @@
 import { userKey, baseApiUrl, loading } from "@/global";
 
 import { DxButton } from "devextreme-vue";
-import {
-  DxForm,
-  DxItem,
-  DxTagBox,
+import DxForm, {
+  DxGroupItem,
+  DxSimpleItem,
   DxButtonItem,
-  DxNumberBox
+  DxLabel,
+  DxRequiredRule,
+  DxCompareRule,
+  DxRangeRule,
+  DxStringLengthRule,
+  DxPatternRule,
+  DxEmailRule
 } from "devextreme-vue/form";
 //import service from './data.js'
 import "devextreme-vue/text-area";
-import {
-  DxValidator,
-  DxRequiredRule,
-  DxCompareRule,
-  DxEmailRule,
-  DxPatternRule,
-  DxStringLengthRule,
-  DxRangeRule
-} from "devextreme-vue/validator";
 
 import Service from "../../services/Treinamento";
 import notify from "devextreme/ui/notify";
+import { constants } from "crypto";
 
 export default {
   components: {
-    DxForm,
-    DxItem,
-    DxTagBox,
     DxButton,
+    DxGroupItem,
+    DxSimpleItem,
     DxButtonItem,
-    DxNumberBox,
-
-    DxValidator,
+    DxLabel,
     DxRequiredRule,
     DxCompareRule,
-    DxEmailRule,
     DxPatternRule,
+    DxRangeRule,
+    DxEmailRule,
     DxStringLengthRule,
-    DxRangeRule
+    DxForm,
+    notify
   },
   props: ["id"],
 
@@ -101,97 +134,49 @@ export default {
     return {
       titulo: "Cadastro de Treinamento",
       treinamento: {},
-      buttonOptions: {
-        text: "Register",
-        type: "success",
-        useSubmitBehavior: true
+
+      statusEditorOptions: {
+        dataSource: situacoes
       },
-      validationRules: {
-        status: [{ type: "required", message: "Informe o status" }],
-        nome: [{ type: "required", message: "Informe do Treinamento" }]
+
+      optionFormatoMoeda: { format: "R$ #,##0.##" },
+
+      valorComparison: ee => {
+        let valor = 0.0;
+        if (this.treinamento.valor === undefined) {
+          return false;
+        }
+        valor = parseFloat(this.treinamento.valor);
+        return valor > 0 ? valor : -1 + valor;
       },
-      groupedItems: {
-        dados: [
-          {
-            dataField: "nome",
-            label: { text: "Nome" },
-            editorOptions: {
-              format: "R$ #,##0.##"
-            },
-            validationRules: [
-              {
-                type: "required",
-                message: "Informe o campo nome."
-              }
-            ]
-          },
-          {
-            dataField: "valorBaseAVista",
-            label: { text: "Valor à vista" },
-            editorOptions: {
-              format: "R$ #,##0.##"
-            },
-            editorType: "dxNumberBox"
-          },
-
-          {
-            dataField: "valor",
-            label: { text: "Valor à prazo" },
-            editorOptions: {
-              format: "R$ #,##0.##"
-            },
-            editorType: "dxNumberBox",
-            validationRules: [
-              {
-                type: "compare",
-                comparisonTarget: "validadarValorPrazo",
-                message: "Informe o Status do treinamento."
-              }
-            ]
-          },
-
-          {
-            dataField: "status",
-            label: {
-              text: "Status"
-            },
-            cssClass: "cssArea",
-
-            editorType: "dxSelectBox",
-            editorOptions: {
-              hideSelectedItems: true,
-              searchEnabled: true,
-              items: situacoes
-            },
-            validationRules: [
-              {
-                type: "required",
-                message: "Informe o Status do treinamento."
-              }
-            ]
-          }
-        ]
+      valorAVistaComparison: ee => {
+        let valor = 0.0;
+        if (this.treinamento.valorBaseAVista === undefined) {
+          return false;
+        }
+        valor = parseFloat(this.treinamento.valorBaseAVista);
+        return valor > 0 ? valor : -1 + valor;
       }
     };
   },
 
   methods: {
-    validadarValorPrazo: () => {
-      return 100;
-    },
-
     handleSubmit(e) {
       e.preventDefault();
+
+      console.log(e);
 
       return;
     },
 
     validateForm(e) {
+      console.log("validateForm");
       this.formValidation = e;
       const v = e.component.validate();
     },
 
     gravar() {
+      console.log("gravar..");
       const validado = this.formValidation.component.validate().isValid;
 
       if (!validado) {

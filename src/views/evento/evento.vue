@@ -246,12 +246,147 @@
                       <dx-item format-name="separator" />
                       <dx-item format-name="color" />
                       <dx-item format-name="background" />
+                      <dx-item format-name="separator" />
+                      <dx-item format-name="link" />
+                      <dx-item format-name="image" />
                     </dx-toolbar>
                   </dx-html-editor>
                 </div>
               </div>
             </div>
             <div slot="tab3" slot-scope="_">
+              <div class="content1">
+                <div class="dx-card-personalizado">
+                  <div class="row">
+                    <div class="col-xs-12 col-sm-12 col-md-12">
+                      <div style="margin-left:6px;color:black;margin-bottom:5px;">
+                        <span>
+                          <b>Email de boas vindas</b>
+                        </span>
+                      </div>
+                    </div>
+
+                    <div class="col-xs-9 col-sm-9 col-md-9">
+                      <dx-text-box
+                        value
+                        v-model="evento.emailBoasVindasTitulo"
+                        placeholder="Informe o título do email"
+                        :editorOptions="{ value: null, width: '100%' }"
+                      ></dx-text-box>
+                    </div>
+
+                    <div class="col-xs-12 col-sm-12 col-md-12">
+                      <div style="margin-top: 5px;">
+                        <dx-html-editor
+                          :height="260"
+                          v-on:input="$emit('input', $event.target.value)"
+                          :value.sync="evento.emailBoasVindas"
+                          v-model="evento.emailBoasVindas"
+                          id="editor"
+                        >
+                          <dx-toolbar>
+                            <dx-item format-name="undo" />
+                            <dx-item format-name="redo" />
+                            <dx-item format-name="separator" />
+                            <dx-item :format-values="sizeValues" format-name="size" />
+                            <dx-item :format-values="fontValues" format-name="font" />
+                            <dx-item format-name="separator" />
+                            <dx-item format-name="bold" />
+                            <dx-item format-name="italic" />
+                            <dx-item format-name="strike" />
+                            <dx-item format-name="underline" />
+                            <dx-item format-name="separator" />
+                            <dx-item format-name="alignLeft" />
+                            <dx-item format-name="alignCenter" />
+                            <dx-item format-name="alignRight" />
+                            <dx-item format-name="alignJustify" />
+                            <dx-item format-name="separator" />
+                            <dx-item format-name="color" />
+                            <dx-item format-name="background" />
+                            <dx-item format-name="separator" />
+                            <dx-item format-name="link" />
+                            <dx-item format-name="image" />
+                          </dx-toolbar>
+                        </dx-html-editor>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-xs-12 col-sm-12 col-md-12">
+                      <div style="margin-left:6px;color:black;margin-bottom:5px;margin-top:10px;">
+                        <span>
+                          <b>Email Informativo</b>
+                        </span>
+                      </div>
+                    </div>
+
+                    <div class="col-xs-6 col-sm-6 col-md-6">
+                      <dx-text-box
+                        value
+                        v-model="evento.emailInformativoTitulo"
+                        placeholder="Informe o título do email"
+                        :editorOptions="{ value: null, width: '100%' }"
+                      ></dx-text-box>
+                    </div>
+                    <div class="col-xs-3 col-sm-3 col-md-3">
+                      <dx-text-box
+                        value
+                        v-model="evento.emailInformativoTitulo"
+                        placeholder="Disparo"
+                        :disabled="true"
+                        :editorOptions="{ value: null, width: '100%' }"
+                      ></dx-text-box>
+                    </div>
+                    <div class="col-xs-4 col-sm-3 col-md-3">
+                      <dx-button
+                        styling-mode="outlined"
+                        @click="onDispararEmailInformativo()"
+                        icon="email"
+                        text="Disparar"
+                      />
+                    </div>
+
+                    <div class="col-xs-12 col-sm-12 col-md-12">
+                      <div style="margin-top: 5px;">
+                        <dx-html-editor
+                          :height="260"
+                          v-on:input="$emit('input', $event.target.value)"
+                          :value.sync="evento.emailInformativo"
+                          v-model="evento.emailInformativo"
+                          id="editor2"
+                        >
+                          <dx-toolbar>
+                            <dx-item format-name="undo" />
+                            <dx-item format-name="redo" />
+                            <dx-item format-name="separator" />
+                            <dx-item :format-values="sizeValues" format-name="size" />
+                            <dx-item :format-values="fontValues" format-name="font" />
+                            <dx-item format-name="separator" />
+                            <dx-item format-name="bold" />
+                            <dx-item format-name="italic" />
+                            <dx-item format-name="strike" />
+                            <dx-item format-name="underline" />
+                            <dx-item format-name="separator" />
+                            <dx-item format-name="alignLeft" />
+                            <dx-item format-name="alignCenter" />
+                            <dx-item format-name="alignRight" />
+                            <dx-item format-name="alignJustify" />
+                            <dx-item format-name="separator" />
+                            <dx-item format-name="color" />
+                            <dx-item format-name="background" />
+                            <dx-item format-name="separator" />
+                            <dx-item format-name="link" />
+                            <dx-item format-name="image" />
+                          </dx-toolbar>
+                        </dx-html-editor>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div slot="tab4" slot-scope="_">
               <div v-show="!tabParticipantesEnabled" style="margin: 15px">
                 <div class="row center-xs">
                   <div class="col-xs-6">
@@ -263,7 +398,13 @@
               </div>
               <div class="dx-card responsive-paddings" v-show="tabParticipantesEnabled">
                 <div class="row end-xs" style="margin-top:-23px;">
-                  <div class="col-xs-10">
+                  <div class="col-xs-4">
+                    <span>À VISTA: R$ {{numero(evento.valorBaseAVista)}}</span>
+                  </div>
+                  <div class="col-xs-4">
+                    <span>À PRAZO: R$ {{numero(evento.valorBase)}}</span>
+                  </div>
+                  <div class="col-xs-4">
                     <dx-button
                       styling-mode="outlined"
                       @click="onAddParticipante()"
@@ -429,6 +570,7 @@
       content-template="myContent"
       :maxWidth="isPopupMaxWidth"
       :maxHeight="isPopupMaxHeight"
+      :deferRendering="false"
     >
       <div slot="myContent" slot-scope="data">
         <!-- Your content goes here -->
@@ -436,6 +578,7 @@
           :isPopup="true"
           :isTitle="false"
           :tipoNegociacaoList="tipoNegociacaoList"
+          :evento="evento"
           @close="popupVisible= $event"
           @atualizar="refreshParticipantes"
           :participante="participante"
@@ -465,6 +608,8 @@ import {
   DxButtonGroup,
   DxItem as DxButtonGroupItem
 } from "devextreme-vue/button-group";
+
+import { DxForm, DxSimpleItem } from "devextreme-vue/form";
 
 import {
   DxTextArea,
@@ -517,6 +662,13 @@ import FormParticipante from "./evento-participante";
 import FormReceber from "../financeiro/receber";
 //import FormParticipante from "../pessoa/pessoa";
 
+const decimalFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "decimal",
+  currency: "BRL",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2
+});
+
 const textBoxRefName = "some-ref-name";
 
 export default {
@@ -557,7 +709,9 @@ export default {
     FormParticipante,
     DxPopup,
     FormReceber,
-    DxScrollView
+    DxScrollView,
+    DxSimpleItem,
+    DxForm
   },
 
   props: ["id2"],
@@ -694,8 +848,12 @@ export default {
         { title: "Informações", template: "tab1" },
         { title: "Site", template: "tab2" },
         {
-          title: "Participantes",
+          title: "Email",
           template: "tab3"
+        },
+        {
+          title: "Participantes",
+          template: "tab4"
         }
       ],
       validationRules: {
@@ -712,7 +870,14 @@ export default {
         "Times New Roman",
         "Verdana"
       ],
-      evento: { siteDetalhes: "", valorBase: 0.0, percentConsultor: 0.0 },
+      evento: {
+        siteDetalhes: "",
+        valorBase: 0.0,
+        percentConsultor: 0.0,
+        emailBoasVindas: "",
+        emailInformativo: "",
+        dDisparoEmail: null
+      },
       treinametoList: [],
       localList: [],
       statusList: ["ATIVO", "INATIVO"],
@@ -733,11 +898,40 @@ export default {
         { id: 12, nome: "12 parcelas" }
       ],
       participantes: [],
+      participante: {},
       columns: ["nome", "status", "State", "Phone", "Fax"]
     };
   },
 
   methods: {
+    onDispararEmailInformativo() {
+      if (!this.lodash.has(this.evento, "id")) {
+        const message = "Este evento ainda não foi gravado.";
+        const position = {
+          at: "center center",
+          of: "#bloco1"
+        };
+        notify(
+          {
+            message: message,
+            position,
+            width: 300,
+            shading: true
+          },
+          "info",
+          4000
+        );
+        return;
+      }
+      ServiceEvento.dispararEmailInformativo(this.evento);
+    },
+
+    numero(n) {
+      let nr = decimalFormatter.format(n);
+
+      return nr;
+    },
+
     onReceberVisible(e) {
       // botao receber grade participantes
       return true;
@@ -767,6 +961,7 @@ export default {
         siteExibir: null,
         siteParcelas: 0,
         valorBase: 0.0,
+        valorBaseAVista: 0.0,
         status: "",
         participantes: null,
         local: null,
@@ -946,7 +1141,12 @@ export default {
         siteParcelas: d.siteParcelas,
         status: d.status,
         treinamento_id: d.treinamento_id,
-        valorBase: d.valorBase
+        valorBase: d.valorBase,
+        emailBoasVindas: d.emailBoasVindas,
+        emailBoasVindasTitulo: d.emailBoasVindasTitulo,
+        emailInformativo: d.emailInformativo,
+        emailInformativoTitulo: d.emailInformativoTitulo
+        //dDisparoEmail: d.dDisparoEmail
       };
 
       if (d.id) payload.id = d.id;
@@ -1131,12 +1331,20 @@ export default {
     id: function(e) {
       this.tabParticipantesEnabled = parseInt(this.id) > 0 ? true : false;
       this.tabs[2].disabled = this.tabParticipantesEnabled;
+    },
+    "evento.treinamento_id": function(e) {
+      console.log("evento.treinamento ", e);
+      let busca = this.lodash.find(this.treinametoList, { id: e });
+      if (e) {
+        this.evento.valorBase = busca.valor;
+        this.evento.valorBaseAVista = busca.valorBaseAVista;
+      }
     }
   }
 };
 </script>
 
-<style>
+<style scoped>
 #aStatus {
   background-color: transparent;
   border: 0;
@@ -1198,5 +1406,13 @@ export default {
 .New {
   content: "New";
   background-color: #f05b41;
+}
+
+#editor {
+  border-color: #ece6e6;
+}
+
+#editor2 {
+  border-color: #ece6e6;
 }
 </style>

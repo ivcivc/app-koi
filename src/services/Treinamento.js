@@ -6,13 +6,17 @@ import { baseApiUrl } from "@/global";
 //import notify from "devextreme/ui/notify";
 
 export default {
-  async getTreinamentosIndex(payload) {
+  async getTreinamentosIndex(payload, params) {
     try {
+      let url = `${baseApiUrl}/treinamentos`;
+      if (!_.isUndefined(params)) {
+        url = `${baseApiUrl}/treinamentos?page=${params.skip}&limit=${
+          params.take
+        }`;
+      }
       return await axios({
         method: "get",
-        url: `${baseApiUrl}/treinamentos?page=${payload.skip}&limit=${
-          payload.take
-        }`,
+        url,
         responseType: "json",
         params: payload,
         data: {}

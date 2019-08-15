@@ -5,7 +5,7 @@
     <div class="content-block" id="bloco1">
       <div class="dx-card responsive-paddings">
         <div class="left-side">
-          <div class="dx-field-label" style="width:110px;">LOCALIZAR POR:</div>
+          <div class="dx-field-label" style="width:124px;">LOCALIZAR POR:</div>
           <dx-select-box
             :data-source="fields"
             :value="fields[0].key"
@@ -13,12 +13,12 @@
             display-expr="text"
             v-model="key"
           />
-          <dx-text-box v-model="value" style="margin-left:6px;"/>
-          <dx-button text="Localizar" @click="onLocalizar" style="margin-left:6px;"/>
+          <dx-text-box v-model="value" style="margin-left:6px;" />
+          <dx-button text="Localizar" @click="onLocalizar" style="margin-left:6px;" />
         </div>
 
         <div class="right-add">
-          <dx-button styling-mode="outlined" @click="onAdd()" icon="add" text="adicionar"/>
+          <dx-button styling-mode="outlined" @click="onAdd()" icon="add" text="adicionar" />
         </div>
 
         <dx-data-grid
@@ -35,7 +35,7 @@
           <!--<dx-paging :page-size="page"/>
             <dx-pager :show-page-size-selector="true" :allowed-page-sizes="pageSizes" :show-info="true"/>
           <dx-editing :allow-updating="true" :popup="{width:700, height:345}" mode="popup"/>-->
-          <dx-filter-row :visible="false" apply-filter="auto"/>
+          <dx-filter-row :visible="false" apply-filter="auto" />
 
           <!--<dx-column
             :activeStateEnabled="false"
@@ -46,12 +46,12 @@
             :allowEditing="false"
           />-->
 
-          <dx-column caption="Ações" :width="110" :buttons="editButtons" type="buttons"/>
+          <dx-column caption="Ações" :width="110" :buttons="editButtons" type="buttons" />
 
-          <dx-column caption="Nome" data-field="nome"/>
-          <dx-column caption="CPF" data-field="cpf" format="###.000.000-00"/>
-          <dx-column caption="RG" data-field="rg"/>
-          <dx-column caption="WatsApp" data-field="tel_celular"/>
+          <dx-column caption="Nome" data-field="nome" />
+          <dx-column caption="CPF" data-field="cpf" format="###.000.000-00" />
+          <dx-column caption="RG" data-field="rg" />
+          <dx-column caption="WatsApp" data-field="tel_celular" />
 
           <!--<div slot="cellTemplate" slot-scope="data">
             <dx-button styling-mode="outlined" @click="onEditClick(data)" icon="edit"/>
@@ -205,7 +205,7 @@ export default {
         paging: true
       },
       paging: {
-        pageSize: 5
+        pageSize: 10
       },
       pager: {
         showPageSizeSelector: true,

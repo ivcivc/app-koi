@@ -220,5 +220,29 @@ export default {
           reject(err);
         });
     });
+  },
+
+  async dispararEmailInformativo(evento) {
+    let payload = {
+      id: evento.id,
+      emailBoasVindas: evento.emailBoasVindas,
+      emailBoasVindasTitulo: evento.emailBoasVindasTitulo,
+      emailInformativo: evento.emailInformativo,
+      emailInformativoTitulo: evento.emailInformativoTitulo
+    };
+    try {
+      const response = await axios.post(
+        `${baseApiUrl}/email/dispararEmailInformativo`,
+        payload
+      );
+
+      let data = response.data;
+
+      return data;
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
+      throw error;
+    }
   }
 };

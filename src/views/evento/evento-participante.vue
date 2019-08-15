@@ -487,6 +487,10 @@ export default {
     tipoNegociacaoList: {
       type: Array,
       default: []
+    },
+    evento: {
+      type: Object,
+      default: {}
     }
   },
 
@@ -556,6 +560,7 @@ export default {
 
         return pagar;
       },
+
       valorConsultorComparison: () => {
         let pagar = _.isUndefined(this.participante.pagarConsultor)
           ? null
@@ -685,6 +690,21 @@ export default {
         this.popupFullScreen = false;
         this.isPopupMaxWidth = "900";
         this.isPopupMaxHeight = "450";
+      }
+    },
+
+    "participante.parcelas": function(e) {
+      if (e === undefined) {
+        return;
+      }
+      if (e === 0) {
+        this.participante.valorBase = 0.0;
+      }
+      if (e === 1) {
+        this.participante.valorBase = this.evento.valorBaseAVista;
+      }
+      if (e > 1) {
+        this.participante.valorBase = this.evento.valorBase;
       }
     }
   },

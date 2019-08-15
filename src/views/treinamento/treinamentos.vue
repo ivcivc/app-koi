@@ -13,12 +13,12 @@
             display-expr="text"
             v-model="key"
           />
-          <dx-text-box v-model="value" style="margin-left:6px;"/>
-          <dx-button text="Localizar" @click="onLocalizar" style="margin-left:6px;"/>
+          <dx-text-box v-model="value" style="margin-left:6px;" />
+          <dx-button text="Localizar" @click="onLocalizar" style="margin-left:6px;" />
         </div>
 
         <div class="right-add">
-          <dx-button styling-mode="outlined" @click="onAdd()" icon="add" text="adicionar"/>
+          <dx-button styling-mode="outlined" @click="onAdd()" icon="add" text="adicionar" />
         </div>
 
         <dx-data-grid
@@ -35,7 +35,7 @@
           <!--<dx-paging :page-size="page"/>
             <dx-pager :show-page-size-selector="true" :allowed-page-sizes="pageSizes" :show-info="true"/>
           <dx-editing :allow-updating="true" :popup="{width:700, height:345}" mode="popup"/>-->
-          <dx-filter-row :visible="false" apply-filter="auto"/>
+          <dx-filter-row :visible="false" apply-filter="auto" />
 
           <!--<dx-column
             :activeStateEnabled="false"
@@ -46,11 +46,12 @@
             :allowEditing="false"
           />-->
 
-          <dx-column caption="Ações" :width="110" :buttons="editButtons" type="buttons"/>
+          <dx-column caption="Ações" :width="110" :buttons="editButtons" type="buttons" />
 
-          <dx-column caption="Nome" data-field="nome"/>
-          <dx-column caption="Investimento" data-field="valor" :format="moedaFormat"/>
-          <dx-column caption="Status" data-field="status"/>
+          <dx-column caption="Nome" data-field="nome" />
+          <dx-column caption="À vista" data-field="valorBaseAVista" :format="moedaFormat" />
+          <dx-column caption="À prazo" data-field="valor" :format="moedaFormat" />
+          <dx-column caption="Status" data-field="status" />
 
           <!--<div slot="cellTemplate" slot-scope="data">
             <dx-button styling-mode="outlined" @click="onEditClick(data)" icon="edit"/>
@@ -129,7 +130,7 @@ const dataSource = new DataSource({
         o.nome = "xxx";
       }
 
-      return Service.getTreinamentosIndex(o);
+      return Service.getTreinamentosIndex(o, params);
     }
   })
 });
@@ -186,11 +187,11 @@ export default {
         paging: true
       },
       paging: {
-        pageSize: 15
+        pageSize: 10
       },
       pager: {
         showPageSizeSelector: true,
-        allowedPageSizes: [15, 20, 25, 30],
+        allowedPageSizes: [10, 15, 20, 25, 30],
         showInfo: true
       },
       key: "nome",

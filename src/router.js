@@ -168,6 +168,28 @@ const router = new Router({
     },
 
     {
+      path: "/prospeccao",
+      name: "prospeccao",
+      meta: { requiresAuth: true },
+      props: true,
+      components: {
+        layout: defaultLayout,
+        content: () => import("./views/prospeccao/prospeccao")
+      }
+    },
+
+    {
+      path: "/mala-direta",
+      name: "mala-direta",
+      meta: { requiresAuth: true },
+      props: true,
+      components: {
+        layout: defaultLayout,
+        content: () => import("./views/mala-direta/mala-direta")
+      }
+    },
+
+    {
       path: "/eventos",
       name: "eventos",
       meta: { requiresAuth: true },
