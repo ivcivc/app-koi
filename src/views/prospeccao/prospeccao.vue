@@ -46,6 +46,7 @@ import CustomStore from "devextreme/data/custom_store";
 import DataSource from "devextreme/data/data_source";
 
 import Query from "devextreme/data/query";
+import { constants } from "crypto";
 
 const getMovieById = function(resourceId) {
   console.log("resourceId ", resourceId);
@@ -63,6 +64,7 @@ function handleErrors(response) {
 }
 
 const schedulerDataSource = new DataSource({
+  key: "id",
   filter: ["startDateTimeZone", "America/Sao_Paulo"],
   store: new CustomStore({
     load: loadOptions => {
@@ -146,7 +148,7 @@ const schedulerDataSource = new DataSource({
       }).then(handleErrors);
     },
     remove: key => {
-      return fetch(`${baseApiUrl}/prospeccao/${encodeURIComponent(key)}`, {
+      return fetch(`${baseApiUrl}/prospeccao/${encodeURIComponent(key.id)}`, {
         method: "DELETE"
       }).then(handleErrors);
     },

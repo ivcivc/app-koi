@@ -11,6 +11,7 @@
       content-template="myContent"
       :maxWidth="580"
       :maxHeight="330"
+      :deferRendering="true"
     >
       <div slot="myContent" slot-scope="data">
         <dx-scroll-view>
@@ -65,10 +66,7 @@
                   <div class="dx-field">
                     <dx-text-box value mask="0000 0000 0000 0009" v-model="dados.cardNumber">
                       <dx-validator>
-                        <dx-string-length-rule
-                          :min="3"
-                          message="Informe o número do cartão de crédito."
-                        />
+                        <dx-required-rule message="Informe o número do cartão." />
                       </dx-validator>
                     </dx-text-box>
                   </div>
@@ -79,11 +77,7 @@
                 <div class="box">
                   <span style="margin-left:6px;">Validade *</span>
                   <div class="dx-field">
-                    <dx-text-box
-                      mask="00/0000"
-                      value.sync="dados.cardValidate"
-                      v-model="dados.cardValidate"
-                    >
+                    <dx-text-box mask="00/0000" v-model="dados.cardValidate">
                       <dx-validator>
                         <dx-compare-rule
                           :comparison-target="ruleValidate"
@@ -101,7 +95,7 @@
                   <div class="dx-field">
                     <dx-text-box value mask="0009" v-model="dados.cardCode">
                       <dx-validator>
-                        <dx-string-length-rule :min="3" message="Informe o código de segurança." />
+                        <dx-required-rule message="Informe o código de segurança." />
                       </dx-validator>
                     </dx-text-box>
                   </div>
@@ -222,7 +216,7 @@ export default {
         ]
       }
     }).$mount();
-    this.validator = validatorComponent.instance;
+    //this.validator = validatorComponent.instance;
   },
 
   watch: {
@@ -239,15 +233,44 @@ export default {
     },
 
     card: function(e) {
-      if (e) this.dados = this.lodash.cloneDeep(e);
+      this.dados.brand = "";
+      this.dados.cardCode = "";
+      this.dados.cardName = "";
+      this.dados.cardNumber = "";
+      this.dados.cardValidate = "";
+
+      if (this.formValidation) {
+        console.log("resetei");
+        this.formValidation.reset();
+        window.va = this.formValidation;
+        this.dados.cardValidate = "109";
+        this.dados.cardCode = "9912";
+        this.formValidation.group.validate();
+        this.formValidation.group.reset();
+        this.formValidation.group.validate();
+        console.log(
+          "9999999999999999999999999999999999999999999999999999999999"
+        );
+      }
+
+      /*this.dados = {
+        brand: null,
+        cardBrand: null,
+        cardCode: null,
+        cardName: null,
+        cardNumber: null,
+        cardValidate: null
+      };*/
+      /*if (e) this.dados = this.lodash.cloneDeep(e);
       else
         this.dados = {
-          cardBrand: "",
-          cardCode: "",
-          cardName: "",
-          cardNumber: "",
-          cardValidate: ""
-        };
+          brand: null,
+          cardBrand: null,
+          cardCode: null,
+          cardName: null,
+          cardNumber: null,
+          cardValidate: null
+        };*/
     }
   },
 
@@ -257,12 +280,14 @@ export default {
 
   data() {
     return {
+      formValidation: null,
       dados: {},
       isShow: false,
       bandeiras: [],
       ruleValidate: () => {
         let card = this.dados.cardValidate;
         if (card === undefined) return 1;
+        if (card === "") return 1;
         if (card.length < 6) {
           return card + "_";
         }
@@ -281,16 +306,30 @@ export default {
   },
 
   methods: {
+    limpar() {
+      /*this.dados = {
+        cardBrand: "",
+        cardCode: "",
+        cardName: "",
+        cardNumber: "",
+        cardValidate: ""
+      };*/
+    },
+
     close() {
+      //this.limpar();
       this.isShow = false;
       this.$emit("close", this.isShow);
     },
 
     validate(params, modulo) {
       const result = params.validationGroup.validate();
+      this.formValidation = params.validationGroup;
       if (result.isValid) {
         this.$emit("aplicado", this.dados);
         this.close();
+        //this.limpar();
+        params.validationGroup.reset();
         return;
       }
       console.log("naõ validado");

@@ -62,9 +62,9 @@ export default [
         path: "/tipoNegociacoes"
       }
     ]
-  },
+  }
 
-  {
+  /*{
     text: "Administração",
     icon: "preferences",
     items: [
@@ -77,7 +77,7 @@ export default [
         path: "/display-data"
       }
     ]
-  }
+  }*/
 ];
 
 /*

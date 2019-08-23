@@ -491,6 +491,10 @@ export default {
     evento: {
       type: Object,
       default: {}
+    },
+    editar: {
+      type: Boolean,
+      default: false
     }
   },
 
@@ -694,6 +698,9 @@ export default {
     },
 
     "participante.parcelas": function(e) {
+      if (this.editar) {
+        return;
+      }
       if (e === undefined) {
         return;
       }
@@ -706,6 +713,10 @@ export default {
       if (e > 1) {
         this.participante.valorBase = this.evento.valorBase;
       }
+    },
+    participante: function(e) {
+      console.log("Ouvindo troca de participante....", e);
+      this.$forceUpdate();
     }
   },
 

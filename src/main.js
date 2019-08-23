@@ -47,6 +47,11 @@ import VueSmartWidget from "vue-smart-widget";
 
 Vue.use(VueSmartWidget);
 
+import "v-slim-dialog/dist/v-slim-dialog.css";
+import SlimDialog from "v-slim-dialog";
+
+Vue.use(SlimDialog);
+
 Vue.config.productionTip = false;
 Vue.prototype.$appInfo = appInfo;
 

@@ -436,7 +436,12 @@
 
                   <dx-column caption="Ações" :width="80" :buttons="editButtons" type="buttons" />
 
-                  <dx-column data-field="receberStatus" caption="Receber" alignment="left"></dx-column>
+                  <dx-column
+                    data-field="receberStatus"
+                    :width="80"
+                    caption="Receber"
+                    alignment="left"
+                  ></dx-column>
 
                   <dx-column
                     :width="82"
@@ -468,7 +473,7 @@
                     :format="moedaFormat"
                   />
 
-                  <dx-column data-field="status" caption="Status" :width="90" />
+                  <!--<dx-column data-field="status" caption="Status" :width="90" /> -->
 
                   <dx-column caption :width="45" :buttons="editButtonsExcluir" type="buttons" />
 
@@ -534,7 +539,7 @@
       :show-title="true"
       class="popup"
       title
-      titleTemplate="<div style='padding: 5px;'><b>Cadastro de Contas a Receber</b></div>"
+      :titleTemplate="tituloContaReceber"
       :fullScreen="popupFullScreen"
       content-template="myContent"
       :maxWidth="990"
@@ -547,8 +552,13 @@
           <FormReceber
             :isPopup="true"
             :isTitle="false"
+            :isParenteListaParticipantes="true"
+            @refreshParticipantes="refreshParticipantes"
+            :participante="participante"
             :receber_id="receber_id"
             @close="popupReceberVisible= $event;receber_id=-2"
+            :limpar="limparItemsReceber"
+            @atualizarListaParticipantes="onAtualizarListaParticipantes"
           />
         </dx-scroll-view>
       </div>
@@ -577,6 +587,7 @@
         <FormParticipante
           :isPopup="true"
           :isTitle="false"
+          :editar="editarParticipante"
           :tipoNegociacaoList="tipoNegociacaoList"
           :evento="evento"
           @close="popupVisible= $event"
@@ -761,7 +772,7 @@ export default {
               if (vm.lodash.isNull(e.receber)) {
                 e.receberStatus = "";
               } else {
-                e.receberStatus = e.receber.status;
+                e.receberStatus = e.receber.statusDescription;
               }
             });
             vm.participantes = participantes;
@@ -787,6 +798,7 @@ export default {
   data: function() {
     return {
       id: this.$route.params.id,
+      tituloContaReceber: "Cadastro de Contas a Receber",
       popupVisible: false,
       popupReceberVisible: false,
       popupFullScreen: false,
@@ -795,6 +807,10 @@ export default {
       gridRefName: "grid",
       selectedRowIndex: -1,
       receber_id: -5,
+
+      limparItemsReceber: 0,
+
+      editarParticipante: false,
 
       animationConfig: {
         show: {
@@ -904,13 +920,30 @@ export default {
   },
 
   methods: {
-    onDispararEmailInformativo() {
+    async onDispararEmailInformativo() {
+      this.$nextTick(function() {
+        let result = confirm(
+          "<div style='margin-left:15px!important;margin-right:15px!important;'><p>Confirma o disparo de email?</p></div>",
+          " Confirmação "
+        );
+        result.then(dialogResult => {
+          if (!dialogResult) {
+            return;
+          }
+          this.dispararEmailInfo();
+        });
+      });
+    },
+
+    async dispararEmailInfo() {
+      loading();
+      const position = {
+        at: "center center",
+        of: "#bloco1"
+      };
+
       if (!this.lodash.has(this.evento, "id")) {
         const message = "Este evento ainda não foi gravado.";
-        const position = {
-          at: "center center",
-          of: "#bloco1"
-        };
         notify(
           {
             message: message,
@@ -923,7 +956,34 @@ export default {
         );
         return;
       }
-      ServiceEvento.dispararEmailInformativo(this.evento);
+
+      ServiceEvento.dispararEmailInformativo(this.evento)
+        .then(r => {
+          loading();
+          notify(
+            {
+              message: "Email disparado com sucesso!",
+              position,
+              width: 300,
+              shading: true
+            },
+            "success",
+            3000
+          );
+        })
+        .catch(e => {
+          loading();
+          notify(
+            {
+              message: e,
+              position,
+              width: 300,
+              shading: true
+            },
+            "error",
+            4000
+          );
+        });
     },
 
     numero(n) {
@@ -939,7 +999,7 @@ export default {
 
     onExcluirVisible(e) {
       // botao excluir da grade participantes.
-      return e.row.data.receberStatus.length === 0;
+      return e.row.data.receberStatus === "";
     },
 
     setFocus: function() {
@@ -1024,6 +1084,7 @@ export default {
         percentConsultor: 0.0,
         valorConsultor: 0.0
       };
+      this.editarParticipante = false;
       this.popupVisible = !this.popupVisible;
     },
 
@@ -1032,6 +1093,10 @@ export default {
       console.log("editaar ", item.row.data);
       const id = item.row.data.id;
       this.participante = _.cloneDeep(item.row.data);
+      console.log("participate ID ", this.participante.id);
+      console.log("participate valorBase ", this.participante.valorBase);
+      this.$forceUpdate();
+      this.editarParticipante = true;
       this.popupVisible = !this.popupVisible;
 
       //this.$router.push({ name: "treinamento", params: { id } });
@@ -1044,9 +1109,17 @@ export default {
       if (this.receber) {
         id = item.row.data.receber.id;
         this.receber_id = this.receber.id;
+        this.tituloContaReceber =
+          "<div style='padding: 5px;'><b>Cadastro de Contas a Receber</b></div>";
       } else {
         this.receber_id = -1;
+        this.tituloContaReceber =
+          "<div style='padding: 5px;'><b>Cadastro de Contas a Receber - (Criar conta)</b></div>";
       }
+
+      this.participante = _.cloneDeep(item.row.data);
+
+      this.limparItemsReceber = this.limparItemsReceber + 1;
 
       this.popupReceberVisible = !this.popupReceberVisible;
     },
@@ -1140,6 +1213,7 @@ export default {
         siteExibir: d.siteExibir,
         siteParcelas: d.siteParcelas,
         status: d.status,
+        siteLink: d.siteLink,
         treinamento_id: d.treinamento_id,
         valorBase: d.valorBase,
         emailBoasVindas: d.emailBoasVindas,
@@ -1264,6 +1338,11 @@ export default {
         });
     },
 
+    onAtualizarListaParticipantes() {
+      // atualizar os participantes. Disparado do conta a receber.
+      this.refreshParticipantes();
+    },
+
     refreshParticipantes() {
       this.participante = {};
       console.log("atualizar inscritos");
@@ -1277,7 +1356,7 @@ export default {
             if (this.lodash.isNull(e.receber)) {
               e.receberStatus = "";
             } else {
-              e.receberStatus = e.receber.status;
+              e.receberStatus = e.receber.statusDescription;
             }
           });
           this.participantes = participantes;

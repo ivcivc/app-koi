@@ -9,8 +9,8 @@
       title
       titleTemplate="<div style='padding: 5px;font-size: 16px;'><b>Transações</b></div>"
       content-template="myContent"
-      :maxWidth="580"
-      :maxHeight="290"
+      :maxWidth="680"
+      :maxHeight="360"
     >
       <div slot="myContent" slot-scope="data">
         <dx-scroll-view>
@@ -59,22 +59,47 @@
             <div class="row">
               <div class="col-xs-12 col-sm-5 col-md-5">
                 <div class="box">
+                  <span style="margin-left:6px;margin-right:16px;">Líquido *</span>
+                  <div class="dx-field">
+                    <dx-number-box
+                      v-model="dados.liquido"
+                      format="R$ #,##0.##"
+                      :disabled="showValor"
+                    ></dx-number-box>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-xs-12 col-sm-3 col-md-3">
+                <div class="box">
+                  <span style="margin-left:6px;margin-right:16px;">Desconto *</span>
+                  <div class="dx-field">
+                    <dx-number-box
+                      v-model="dados.desconto"
+                      format="R$ #,##0.##"
+                      :disabled="showValor"
+                    ></dx-number-box>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-xs-12 col-sm-4 col-md-4">
+                <div class="box">
                   <span style="margin-left:6px;margin-right:16px;">Valor *</span>
                   <div class="dx-field">
-                    <dx-number-box v-model="dados.value" format="R$ #,##0.##" :disabled="showValor">
+                    <dx-number-box v-model="dados.value" format="R$ #,##0.##" :read-only="true">
                       <dx-validator>
-                        <dx-range-rule :min="0" message="Informe o valor desta transação." />
-                        <!--<dx-compare-rule
-                        :comparison-target="valorLiquidoComparison"
-                        message="Informe o valor liquido"
-                        />-->
+                        <dx-compare-rule
+                          :comparison-target="valorTransacaoComparison"
+                          message="Informe o valor da transação"
+                        />
                       </dx-validator>
                     </dx-number-box>
                   </div>
                 </div>
               </div>
 
-              <div class="col-xs-12 col-sm-7 col-md-7">
+              <div class="col-xs-12 col-sm-5 col-md-5">
                 <div class="box">
                   <span style="margin-left:6px;">Status</span>
                   <div class="dx-field">
@@ -88,10 +113,16 @@
                       value-expr="name"
                     >
                       <dx-validator>
-                        <dx-required-rule message="Informe o meio de pagamento" />
+                        <dx-required-rule message="Informe o status da transação" />
                       </dx-validator>
                     </dx-select-box>
                   </div>
+                </div>
+              </div>
+
+              <div class="col-xs-12 col-sm-6 col-md-6">
+                <div class="box">
+                  <a style="margin-left:6px;" href="#" @click="onDetalhesConta">Detalhes da conta</a>
                 </div>
               </div>
             </div>
@@ -99,7 +130,7 @@
             <div class="row end-xs" style="margin-top:32px;margin-bottom: 0px;">
               <div class="col-xs-12">
                 <div class="box">
-                  <dx-button
+                  <!--<dx-button
                     text="Atualizar/Reenviar"
                     type="info"
                     @click="validate($event,'reenviar')"
@@ -113,7 +144,7 @@
                     @click="validate($event,'cancelarTransacao')"
                     v-if="acoes.cancelar"
                     style="margin-left:5px;margin-rigth: 5px;"
-                  />
+                  />-->
 
                   <dx-button
                     text="Pagar fora do sistema"
@@ -122,28 +153,29 @@
                     v-if="acoes.pagarForaSistema"
                     style="margin-left:5px;margin-rigth: 5px;"
                   />
-                  <dx-button
+                  <!--<dx-button
                     text="Status - não enviado operadora"
                     type="success"
                     @click="validate($event,'naoEnviadoOperadora')"
                     v-if="acoes.naoEnviadoOperadora"
                     style="margin-left:5px;margin-rigth: 5px;"
-                  />
+                  />-->
 
-                  <dx-button
+                  <!--<dx-button
                     text="Estornar"
                     type="success"
                     @click="validate($event,'estornar')"
                     v-if="acoes.estornar"
                     style="margin-left:5px;margin-rigth: 5px;"
-                  />
+                  />-->
 
                   <dx-button
-                    text="Gravar"
+                    :text="TextButtonGravar"
                     type="success"
-                    @click="validate"
+                    @click="validate($event,'gravarManual')"
                     v-if="acoes.gravarManual"
                   />
+
                   <dx-button text="Cancelar" style="margin-left:20px;" @click="close" />
                 </div>
               </div>
@@ -152,12 +184,84 @@
         </dx-scroll-view>
       </div>
     </dx-popup>
+
+    <dx-popup
+      :visible.sync="popupDetalhesConta"
+      :drag-enabled="true"
+      :close-on-outside-click="false"
+      :show-title="true"
+      class="popup"
+      title
+      titleTemplate="<div style='padding: 5px;font-size: 16px;'><b>Detalhes</b></div>"
+      content-template="myContent"
+      :maxWidth="680"
+      :maxHeight="500"
+    >
+      <div slot="myContent" slot-scope="data">
+        <div class="form">
+          <div class="dx-fieldset">
+            <div class="dx-field">
+              <div class="dx-field-label">Código</div>
+              <div class="dx-field-value">
+                <dx-number-box v-model="item.id" :read-only="true" />
+              </div>
+            </div>
+
+            <div class="dx-field">
+              <div class="dx-field-label">Código (Galaxpay)</div>
+              <div class="dx-field-value">
+                <dx-text-box :value.sync="item.paymentBillInternalId" :read-only="true" />
+              </div>
+            </div>
+
+            <div class="dx-field">
+              <div class="dx-field-label">Código interno</div>
+              <div class="dx-field-value">
+                <dx-text-box :value.sync="item.paymentBillIntegrationId" :read-only="true" />
+              </div>
+            </div>
+
+            <div class="dx-field">
+              <div class="dx-field-label">Código autorização</div>
+              <div class="dx-field-value">
+                <dx-text-box :value.sync="item.authorizationCode" :read-only="true" />
+              </div>
+            </div>
+
+            <div class="dx-field">
+              <div class="dx-field-label">Link</div>
+              <div class="dx-field-value">
+                <dx-text-box :value.sync="item.link" :read-only="true" />
+              </div>
+            </div>
+
+            <div class="dx-field">
+              <div class="dx-field-label">Info</div>
+              <div class="dx-field-value">
+                <dx-text-box :value.sync="item.additionalInfo" :read-only="true" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row end-xs" style="margin-right:5px;">
+          <div class="col-xs-12">
+            <div class="box">
+              <dx-button text="Fechar" style="margin-left:8px;" @click="popupDetalhesConta=false" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </dx-popup>
   </div>
 </template>
 
 <script>
 import DxPopup from "devextreme-vue/popup";
+import ServiceReceber from "../../services/Receber";
 
+import notify from "devextreme/ui/notify";
+import { loading } from "@/global";
 import {
   DxAdapter,
   DxRequiredRule,
@@ -227,6 +331,10 @@ export default {
     status: {
       type: Array,
       default: []
+    },
+    receber: {
+      type: Object,
+      default: []
     }
   },
 
@@ -239,7 +347,10 @@ export default {
         tid: e.tid,
         payDay: e.payDay,
         status: e.status,
+        statusDescription: e.statusDescription,
         brand: e.brand,
+        liquido: e.liquido,
+        desconto: e.desconto,
         value: e.value,
         receber_id: e.receber_id
       };
@@ -255,26 +366,71 @@ export default {
 
     modo: function(e) {
       this.$forceUpdate();
+      if (_.has(this.receber, "id")) {
+        if (this.receber.id > 0) {
+          this.TextButtonGravar = "Gravar";
+        } else {
+          this.TextButtonGravar = "Confirmar";
+        }
+      } else {
+        this.TextButtonGravar = "Confirmar";
+      }
     },
 
     isShowPopup: function(e) {
       this.isShow = e;
+    },
+
+    "dados.liquido": function(e) {
+      console.log("liquido");
+      if (e <= 0) this.dados.value = 0.0;
+
+      this.dados.value = e - this.dados.desconto;
+    },
+    "dados.desconto": function(e) {
+      console.log("desconto");
+      this.dados.value = this.dados.liquido - e;
+    },
+    "dados.status": function(e) {
+      const status = e;
+      let oStatus = _.find(this.status, { name: this.dados.status });
+      this.dados.statusDescription = oStatus.displayName;
     }
   },
   mounted() {},
 
   data() {
     return {
+      TextButtonGravar: "Gravar",
+      popupDetalhesConta: false,
       showDisabled: false,
       showData: false,
       showValor: false,
       showStatus: false,
       dados: {},
-      isShow: false
+      isShow: false,
+
+      valorTransacaoComparison: () => {
+        let value = _.isUndefined(this.dados.value) ? null : this.dados.value;
+
+        if (!value) {
+          return 1;
+        }
+
+        if (value === 0) {
+          return 1;
+        }
+
+        return value;
+      }
     };
   },
 
   methods: {
+    onDetalhesConta() {
+      this.popupDetalhesConta = true;
+    },
+
     close() {
       this.$emit("close", false);
     },
@@ -283,6 +439,10 @@ export default {
       console.log(params);
       const result = params.validationGroup.validate();
       if (result.isValid) {
+        /*let status = this.dados.status;
+        let oStatus = _.find(this.status, { name: this.dados.status });
+        this.dados.statusDescription = oStatus.displayName;*/
+
         if (modulo === "pagarForaSistema") {
           this.pagarForaSistema();
         }
@@ -298,8 +458,16 @@ export default {
           this.cancelarTransacao();
         }
 
-        this.$emit("aplicado", this.dados);
-        this.close();
+        if (modulo === "gravarManual") {
+          if (this.modo === 2) {
+            this.gravarManualUpdate();
+          } else {
+            this.gravarManualAdd();
+          }
+        }
+
+        /*this.$emit("aplicado", this.dados);
+        this.close();*/
         return;
       }
       console.log("naõ validado");
@@ -311,6 +479,65 @@ export default {
 
     pagarForaSistema() {
       console.log("pagar fora do sistema");
+      const id = this.item.id;
+
+      loading();
+
+      const resposta = ServiceReceber.pagarForaSistema(id)
+        .then(res => {
+          const position = {
+            at: "center center",
+            of: "#bloco1"
+          };
+          loading();
+          if (res.type) {
+            notify(
+              {
+                message: res.message,
+                position,
+                width: 300,
+                shading: true
+              },
+              "success",
+              3000
+            );
+          } else {
+            notify(
+              {
+                message: res.message,
+                position,
+                width: 300,
+                shading: true
+              },
+              "success",
+              3000
+            );
+          }
+
+          this.$emit("aplicado", this.dados);
+          //res.receber.quantity = parseInt(res.receber.quantity);
+          //res.receberStatus = res.receber.statusDescription;
+          //this.$emit("atualizarReceber", res.receber);
+          this.close();
+        })
+        .catch(error => {
+          loading();
+          console.log("erro ", error);
+          const position = {
+            at: "center center",
+            of: "#bloco1"
+          };
+          notify(
+            {
+              message: "Ocorreu uma falha na transação.",
+              position,
+              width: 300,
+              shading: true
+            },
+            "error",
+            4000
+          );
+        });
     },
 
     naoEnviadoOperadora() {
@@ -323,6 +550,107 @@ export default {
 
     estornar() {
       console.log("estornar");
+    },
+
+    async gravarManualUpdate() {
+      const ID = this.receber.id;
+      let item = _.cloneDeep(this.dados);
+      item.receber_id = ID;
+
+      const resposta = ServiceReceber.updateReceberItem(item)
+        .then(res => {
+          const position = {
+            at: "center center",
+            of: "#bloco1"
+          };
+          notify(
+            {
+              message: "Transação realizada com sucesso.",
+              position,
+              width: 300,
+              shading: true
+            },
+            "success",
+            3000
+          );
+
+          this.$emit("aplicado", this.dados);
+          res.receber.quantity = parseInt(res.receber.quantity);
+          res.receberStatus = res.receber.statusDescription;
+          this.$emit("atualizarReceber", res.receber);
+          this.close();
+        })
+        .catch(error => {
+          console.log("erro ", error);
+          const position = {
+            at: "center center",
+            of: "#bloco1"
+          };
+          notify(
+            {
+              message: "Ocorreu uma falha na transação.",
+              position,
+              width: 300,
+              shading: true
+            },
+            "error",
+            4000
+          );
+        });
+    },
+
+    async gravarManualAdd() {
+      const ID = this.receber.id;
+
+      if (!ID) {
+        this.$emit("aplicado", this.dados);
+        this.close();
+        return;
+      }
+      let item = _.cloneDeep(this.dados);
+      item.receber_id = ID;
+
+      const resposta = ServiceReceber.addReceberItem(item)
+        .then(res => {
+          const position = {
+            at: "center center",
+            of: "#bloco1"
+          };
+          notify(
+            {
+              message: "Transação realizada com sucesso.",
+              position,
+              width: 300,
+              shading: true
+            },
+            "success",
+            3000
+          );
+          this.dados.id = res.item.id;
+
+          this.$emit("aplicado", this.dados);
+          res.receber.quantity = parseInt(res.receber.quantity);
+          res.receberStatus = res.receber.statusDescription;
+          this.$emit("atualizarReceber", res.receber);
+          this.close();
+        })
+        .catch(error => {
+          console.log("erro ", error);
+          const position = {
+            at: "center center",
+            of: "#bloco1"
+          };
+          notify(
+            {
+              message: "Ocorreu uma falha na transação.",
+              position,
+              width: 300,
+              shading: true
+            },
+            "error",
+            4000
+          );
+        });
     }
   }
 };

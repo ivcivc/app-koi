@@ -6,6 +6,7 @@ window.lo = Vue.lodash;
 
 export default {
   async getReceberItemsIndex(payload) {
+    console.log(payload);
     try {
       return await axios({
         method: "get",
@@ -72,11 +73,19 @@ export default {
         `${baseApiUrl}/galaxPay/getPessoaCartoes/${ID}`
       );
 
-      const data = response.data.cards;
-      data.forEach(r => {
-        r.description = r.brand + " - " + r.truncatedNumber;
-      });
-      return data;
+      if (_.has(response, "response")) {
+        return [];
+      }
+
+      if (response.data.type) {
+        const data = response.data.cards;
+        data.forEach(r => {
+          r.description = r.brand + " - " + r.truncatedNumber;
+        });
+        return data;
+      }
+
+      return [];
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error(error);
@@ -100,6 +109,73 @@ export default {
   async addReceber(payload) {
     try {
       const response = await axios.post(`${baseApiUrl}/receber`, payload);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async updateReceber(payload) {
+    try {
+      const response = await axios.put(
+        `${baseApiUrl}/receber/${payload.id}`,
+        payload
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async updateReceberItem(payload) {
+    try {
+      const response = await axios.put(
+        `${baseApiUrl}/receberItems/${payload.id}`,
+        payload
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async addReceberItem(payload) {
+    try {
+      const response = await axios.post(`${baseApiUrl}/receberItems`, payload);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async pagarForaSistema(ID) {
+    try {
+      const response = await axios.post(`${baseApiUrl}/pagarForaSistema`, {
+        receber_item_id: ID
+      });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async sincronizar(receber_id) {
+    try {
+      const response = await axios.post(
+        `${baseApiUrl}/site/updateTransactions`,
+        {
+          receber_id
+        }
+      );
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async delete(ID) {
+    try {
+      const response = await axios.delete(`${baseApiUrl}/receber/${ID}`);
       return response.data;
     } catch (error) {
       throw error;

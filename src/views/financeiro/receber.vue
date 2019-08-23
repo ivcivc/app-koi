@@ -2,12 +2,14 @@
   <div>
     <FormItem
       :item="item"
+      :receber="receber"
       :modo="modoItem"
       :status="statusItems"
       :isShowPopup="popupItemVisible"
       :acoes="acoes"
-      @close="popupItemVisible=$event"
+      @close="popupItemVisible=$event;modoItem=0;"
       @aplicado="onItemAplicar($event);"
+      @atualizarReceber="onAtualizarReceber($event)"
     />
 
     <FormCartaoCredito
@@ -20,9 +22,12 @@
     <div class="content-block-title" id="bloco1">
       <div class="row between-xs" style="margin-top:0px;margin-bottom: 0px;">
         <div class="col-xs-7">
-          <h2 class="content-block" v-if="isTitle">Conta a Receber</h2>
+          <h2
+            class="content-block"
+            v-if="isTitle"
+          >{{titulo}} - # {{receber.transactionId === null ? '' :receber.transactionId }}</h2>
         </div>
-        <div class="col-xs-5">
+        <!--<div class="col-xs-5">
           <div class="row end-xs">
             <dx-button
               style="margin-top:30px"
@@ -41,7 +46,7 @@
               :visible="modo === 2 "
             />
           </div>
-        </div>
+        </div>-->
       </div>
     </div>
 
@@ -79,7 +84,7 @@
               </div>
             </div>
 
-            <div class="col-xs-12 col-sm-6 col-md-6">
+            <div class="col-xs-12 col-sm-4 col-md-4">
               <div class="box">
                 <span style="margin-left:6px;">Status *</span>
                 <div class="dx-field">
@@ -113,6 +118,13 @@
                     </dx-validator>
                   </dx-select-box>
                 </div>
+              </div>
+            </div>
+
+            <div class="col-xs-12 col-sm-2 col-md-2">
+              <span style="margin-left:6px;">ID #</span>
+              <div class="dx-field">
+                <dx-text-box :disabled="true" value v-model="receber.transactionId"></dx-text-box>
               </div>
             </div>
           </div>
@@ -160,7 +172,7 @@
                     v-model="receber.meioPgto"
                     display-expr="value"
                     value-expr="key"
-                    :disabled=" modo===2 || items.length > 0"
+                    :disabled=" modo===2 || (modo===2 && items.length > 0)"
                   >
                     <dx-validator>
                       <dx-required-rule message="Informe o meio de pagamento" />
@@ -262,9 +274,16 @@
                 <a
                   style="margin-left:40px;"
                   href="#"
+                  @click="this.getCartaoCredito"
+                  v-show="receber.meioPgto==='galaxpay' && modo === 1"
+                >buscar</a>
+                <a
+                  style="margin-left:40px;"
+                  href="#"
                   @click="this.addCartaoCredito"
                   v-show="receber.meioPgto==='galaxpay' && modo === 1"
                 >adicionar</a>
+
                 <div class="dx-field">
                   <dx-select-box
                     :items="cartaoCreditoList"
@@ -277,7 +296,12 @@
                     :visible="modo===1 && receber.meioPgto === 'galaxpay'"
                   >
                     <dx-validator>
-                      <dx-required-rule message="Informe o cartão de crédito" />
+                      <!--<dx-required-rule message="Informe o cartão de crédito" />-->
+
+                      <dx-compare-rule
+                        :comparison-target="cartaoCreditoComparison"
+                        message="Informe o cartão de crédito"
+                      />
                     </dx-validator>
                   </dx-select-box>
                 </div>
@@ -307,6 +331,23 @@
                     :visible="modo===2 && receber.meioPgto === 'galaxpay'"
                   ></dx-text-box>
                 </div>
+              </div>
+            </div>
+
+            <div class="col-xs-12 col-sm-6 col-md-6">
+              <div class="box">
+                <a style="margin-left:6px;" href="#" @click="this.onDetalhesConta">Detalhes da conta</a>
+
+                <!--<div class="dx-field">
+                  <dx-button
+                    style="margin-top:00px"
+                    text="Visualizar"
+                    type="normal"
+                    @click="onDetalhesConta"
+                    :styling-mode="'outlined'"
+                    :visible="modo === 2"
+                  />
+                </div>-->
               </div>
             </div>
           </div>
@@ -377,11 +418,12 @@
                   <dx-paging :enabled="false" />
                   <dx-column
                     caption="Ações"
-                    :width="110"
+                    :width="50"
                     :buttons="editButtons"
                     ref="btn"
                     type="buttons"
                   />
+                  <dx-column :width="60" data-field="paymentBillInternalId" caption="ID#" />
                   <dx-column :width="70" data-field="installmentNumber" caption="Parcela" />
                   <dx-column data-field="payDay" data-type="date" caption="Vencimento" :width="94" />
                   <dx-column
@@ -432,11 +474,40 @@
           <div class="row end-xs" style="margin-top:32px;margin-bottom: 25px;">
             <div class="col-xs-12">
               <div class="box">
+                <!--<dx-button
+                  style="margin-top:00px"
+                  text="Alterar Cartão de Crédito"
+                  hint="Alterar o cartão de crédito do Aluno."
+                  type="normal"
+                  @click="onAlterarCartao"
+                  :styling-mode="'outlined'"
+                  :visible="modo === 2 && receber.meioPgto === 'galaxpay'"
+                />-->
+                <dx-button
+                  style="margin-top:00px;margin-left:10px;margin-right:55px;"
+                  text="Cancelar conta receber"
+                  hint="Não é possível reverter esta operação."
+                  type="danger"
+                  @click="onCancelarConta"
+                  :styling-mode="'outlined'"
+                  :visible="modo === 2 && receber.meioPgto === 'koi'"
+                />
+
+                <!--<dx-button
+                  style="margin-top:00px;margin-left:10px;margin-right:55px;"
+                  text="Cancelar conta receber"
+                  hint="Cancelar esta conta também no meio de pagamento. Não é possível reverter esta operação."
+                  type="danger"
+                  @click="onCancelarConta"
+                  :styling-mode="'outlined'"
+                  :visible="modo === 2 && receber.meioPgto === 'galaxpay'"
+                />-->
+
                 <dx-button
                   text="Gravar"
                   type="success"
                   @click="validate"
-                  v-if="receber.meioPgto === 'koi'"
+                  v-if="receber.meioPgto === 'koi' && modo === 1"
                 />
                 <dx-button
                   text="Enviar para GalaxPay"
@@ -444,13 +515,70 @@
                   @click="validate"
                   v-if="receber.meioPgto === 'galaxpay' && modo === 1"
                 />
-                <dx-button text="Abandonar" style="margin-left:8px;" @click="cancelar" />
+                <dx-button
+                  text="Sincronizar"
+                  type="info"
+                  icon="pulldown"
+                  @click="sincronizar"
+                  style="margin-right:70px;"
+                  hint="Sincronizar com o servidor Galaxpay"
+                  v-if="receber.meioPgto === 'galaxpay' && modo === 2"
+                />
+                <dx-button text="Sair" style="margin-left:8px;" @click="cancelar" />
               </div>
             </div>
           </div>
         </dx-validation-group>
       </div>
     </div>
+
+    <dx-popup
+      :visible.sync="popupDetalhesConta"
+      :drag-enabled="true"
+      :close-on-outside-click="false"
+      :show-title="true"
+      class="popup"
+      title
+      titleTemplate="<div style='padding: 5px;font-size: 16px;'><b>Detalhes</b></div>"
+      content-template="myContent"
+      :maxWidth="580"
+      :maxHeight="350"
+    >
+      <div slot="myContent" slot-scope="data">
+        <div class="form">
+          <div class="dx-fieldset">
+            <div class="dx-field">
+              <div class="dx-field-label">Código</div>
+              <div class="dx-field-value">
+                <dx-number-box :value.sync="receber.id" :read-only="true" />
+              </div>
+            </div>
+
+            <div class="dx-field">
+              <div class="dx-field-label">Código (Galaxpay)</div>
+              <div class="dx-field-value">
+                <dx-text-box :value.sync="receber.transactionId" :read-only="true" />
+              </div>
+            </div>
+
+            <div class="dx-field">
+              <div class="dx-field-label">Código interno</div>
+              <div class="dx-field-value">
+                <dx-text-box :value.sync="receber.transactionInternalId" :read-only="true" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row end-xs" style="margin-right:5px;">
+          <div class="col-xs-12">
+            <div class="box">
+              <dx-button text="Fechar" style="margin-left:8px;" @click="popupDetalhesConta=false" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </dx-popup>
   </div>
 </template>
 
@@ -461,6 +589,9 @@ Number.prototype.toFixedDown = function(digits) {
   return n.toFixed(digits);
 };
 
+import moment from "moment-timezone";
+
+import { confirm } from "devextreme/ui/dialog";
 import axios from "axios";
 import { loading } from "@/global";
 import notify from "devextreme/ui/notify";
@@ -602,6 +733,18 @@ export default {
     isTitle: {
       type: Boolean,
       default: true
+    },
+    participante: {
+      type: Object,
+      default: () => null
+    },
+    isParenteListaParticipantes: {
+      type: Boolean,
+      default: false
+    },
+    limpar: {
+      type: [String, Number],
+      default: 0
     }
   },
 
@@ -610,7 +753,7 @@ export default {
     const id = parseInt(to.params.id);
     if (!id || id === -1) {
       next(vm => {
-        vm.receber = vm.receberDefault;
+        vm.receber = vm.onReceberDefault;
         return true;
       });
       loading();
@@ -619,7 +762,9 @@ export default {
         .then(r => {
           next(vm => {
             r.quantity = parseInt(r.quantity);
+
             vm.receber = r;
+
             vm.items = r.receberItems;
             return true;
           });
@@ -648,12 +793,18 @@ export default {
 
   mounted() {
     window.w = this;
+    this.cartaoCreditoList = [];
+    window.moment = this.$moment;
   },
 
   data() {
     const dsPessoa = dataSourcePessoas;
 
     return {
+      titulo: "Conta a Receber",
+
+      popupDetalhesConta: false,
+
       moedaFormat: { type: "currency", precision: 2 },
       modo: parseInt(this.$route.params.id) > 0 ? 2 : 1,
       modoItem: 0,
@@ -712,6 +863,7 @@ export default {
         status: ""
       },
       receberDefault: {
+        dateFirst: null,
         meioPgto: "",
         liquido: 0.0,
         desconto: 0.0,
@@ -720,6 +872,31 @@ export default {
         valorParcela: 0.0,
         dateFirst: "",
         status: ""
+      },
+
+      cartaoCreditoComparison: () => {
+        const meioPgto = this.receber.meioPgto;
+        let cartao = this.receber.cardInternalId;
+
+        if (this.receber.meioPgto === "koi") {
+          return cartao;
+        }
+
+        if (this.receber.meioPgto === "galaxpay" && cartao === undefined) {
+          return "$";
+        }
+
+        if (this.receber.meioPgto === "galaxpay" && _.isNull(cartao)) {
+          return "$";
+        }
+
+        if (this.receber.meioPgto === "galaxpay" && this.modo !== 1)
+          return cartao;
+        if (_.isEmpty(this.receber.meioPgto)) {
+          return "#";
+        } else {
+          return cartao;
+        }
       },
 
       valorTotalContaComparison: () => {
@@ -854,6 +1031,12 @@ export default {
   },
 
   watch: {
+    id: function(e) {
+      console.log("ID MODIFICADO.......");
+      //if (e === -1) this.titulo = "Conta a Receber (novo registro)";
+      //else this.titulo = "Conta a Receber";
+    },
+
     screen: function(tam) {
       if (tam.isSmall || tam.isXSmall) {
         this.isPopupMaxWidth = "2000";
@@ -880,17 +1063,6 @@ export default {
       this.calcularValorCadaParcela(e);
     },
 
-    "receber.pessoa_id": function(e) {
-      if (this.modo === 1) {
-        let lista = [];
-        const arr = ServiceReceber.getPessoaCartoes("1ivc").then(r => {
-          r.forEach(e => lista.push(e));
-        });
-
-        this.cartaoCreditoList = lista;
-      }
-    },
-
     id: function(e) {
       this.modo = 1;
       if (e === undefined) {
@@ -913,10 +1085,92 @@ export default {
         this.modo = 2;
         this.getReceber(e);
       }
+    },
+
+    participante: function(e) {
+      //this.getCartaoCredito();
+      console.log(
+        "participante disparado......................................"
+      );
+      this.onReceberDefault();
+    },
+
+    limpar: function(l) {
+      this.items = [];
+      this.limparDados();
     }
   },
 
   methods: {
+    sincronizar() {
+      loading();
+      const receber_id = this.receber.id;
+      const position = {
+        at: "center center",
+        of: "#bloco1"
+      };
+      ServiceReceber.sincronizar(`${receber_id}`)
+        .then(e => {
+          this.getReceber(receber_id);
+          loading();
+          notify(
+            {
+              message: "Sincronização realizada com sucesso.",
+              position,
+              width: 300,
+              shading: true
+            },
+            "success",
+            3000
+          );
+        })
+        .catch(e => {
+          loading();
+          notify(
+            {
+              message: "Ocorreu uma falha na transação. Tente mais tarde!",
+              position,
+              width: 300,
+              shading: true
+            },
+            "error",
+            3000
+          );
+        });
+    },
+
+    getCartaoCredito() {
+      loading();
+      this.cartaoCreditoList = [];
+      let pessoa_id = this.receber.pessoa_id;
+      if (pessoa_id === undefined) return;
+      //if (this.modo === 1) {
+      let lista = [];
+      const arr = ServiceReceber.getPessoaCartoes(pessoa_id)
+        .then(r => {
+          loading();
+          if (_.has(r, "response")) {
+          } else {
+            r.forEach(e => {
+              delete e["integrationId"];
+              lista.push(e);
+            });
+          }
+        })
+        .catch(e => {
+          loading();
+        });
+
+      this.cartaoCreditoList = lista;
+      //}
+    },
+
+    onAtualizarReceber(r) {
+      // atualizou uma conta a receber
+      this.receber = r;
+      this.$emit("atualizarListaParticipantes");
+    },
+
     getReceber(ID) {
       loading();
       ServiceReceber.getReceber(ID)
@@ -987,6 +1241,11 @@ export default {
     },
 
     addItem() {
+      if (this.lodash.has(this.receber, "id")) {
+        return false;
+      }
+      console.log("passou");
+      //return;
       this.acoes = {
         editarData: false,
         editarValor: false,
@@ -998,7 +1257,12 @@ export default {
       if (value <= 0 || quantity <= 0 || meioPgto)
         return this.mensagem("Primeiro informe os dados desta conta.");
 
-      const valor = parseFloat(decimalFormatter.format(value / quantity));
+      const valor = parseFloat(
+        decimalFormatter
+          .format(value / quantity)
+          .replace(".", "")
+          .replace(",", ".")
+      );
 
       if (this.receber.meioPgto === "koi") {
         this.statusItems = this.statusTransactionKoi;
@@ -1022,14 +1286,20 @@ export default {
         installmentNumber: 0,
         tid: "",
         payDay: "",
-        status: this.receber.meioPgto === "koi" ? "emAberto" : "transmitir",
+        status: this.receber.meioPgto === "koi" ? "emAberto" : "emAberto",
+        statusDescription:
+          this.receber.meioPgto === "koi" ? "Em aberto" : "Em aberto",
         brand: "",
+        liquido: valor,
+        desconto: 0.0,
         value: valor,
         receber_id: this.receber.receber_id
       };
 
+      //this.items = [];
       this.item = dados;
       this.modoItem = 1;
+      //this.$forceUpdate();
       this.popupItemVisible = !this.popupItemVisible;
     },
 
@@ -1131,6 +1401,18 @@ export default {
           reenviar: false
         };
       }
+      if (status === "auto") {
+        // Ainda não enviada para operadora
+        acoes = {
+          pagarForaSistema: true,
+          naoEnviadoOperadora: false,
+          cancelar: true,
+          editarData: true,
+          editarValor: true,
+          estornar: false,
+          reenviar: false
+        };
+      }
       if (this.receber.meioPgto === "koi") {
         acoes.gravarManual = true;
       } else {
@@ -1157,10 +1439,19 @@ export default {
           this.items[i].payDay = item.payDay;
           this.items[i].receber_id = item.receber_id;
           this.items[i].status = item.status;
+          this.items[i].statusDescription = item.statusDescription;
           this.items[i].tid = item.tid;
+          this.items[i].liquido = item.liquido;
+          this.items[i].desconto = item.desconto;
           this.items[i].value = item.value;
+
+          this.item = this.items[i];
         }
       });
+
+      this.$forceUpdate();
+
+      this.modoItem = 0;
 
       /*this.item = {
         brand: item.item,
@@ -1235,7 +1526,7 @@ export default {
     },
 
     statusGrid(item) {
-      const status = item.data.data.status;
+      /*const status = item.data.data.status;
       const arr =
         this.receber.meioPgto === "koi"
           ? this.statusTransactionKoi
@@ -1244,7 +1535,8 @@ export default {
       if (o) {
         return o.displayName;
       }
-      return status;
+      return status;*/
+      return item.data.data.statusDescription;
     },
 
     temItem() {
@@ -1278,9 +1570,14 @@ export default {
     gravarAdd() {
       console.log("receber ", this.receber);
       let receber = this.lodash.cloneDeep(this.receber);
+      if (this.receber.meioPgto === "koi") {
+        let items = this.lodash.cloneDeep(this.items);
+        receber.receberItems = items;
+      }
       let card = this.lodash.cloneDeep(this.card);
       let payload = { receber, card };
       console.log(payload);
+      loading();
 
       const resposta = ServiceReceber.addReceber(payload)
         .then(res => {
@@ -1295,12 +1592,92 @@ export default {
               width: 300,
               shading: true
             },
-            "error",
+            "success",
             3000
           );
+          loading();
+
+          if (this.isParenteListaParticipantes) {
+            this.$emit("refreshParticipantes", true);
+            if (this.isPopup) {
+              this.$emit("close", false);
+            }
+          } else {
+            this.cancelar();
+          }
         })
         .catch(error => {
           console.log("erro ", error);
+          loading();
+        });
+    },
+
+    addReceberGalaxpay(payload) {
+      loading();
+      const position = {
+        at: "center center",
+        of: "#bloco1"
+      };
+
+      const resposta = ServiceReceber.addReceber(payload)
+        .then(res => {
+          const position = {
+            at: "center center",
+            of: "#bloco1"
+          };
+
+          if (!res.type) {
+            const options = { title: "Info", size: "sm" };
+            this.$dialogs.alert(res.message, options).then(e => {});
+
+            notify(
+              {
+                message: res.message,
+                position,
+                width: 300,
+                shading: true
+              },
+              "error",
+              3000
+            );
+          } else {
+            notify(
+              {
+                message:
+                  "Conta gerada com sucesso! Aguarde retorno da Galaxpay.",
+                position,
+                width: 300,
+                shading: true
+              },
+              "success",
+              3000
+            );
+          }
+
+          loading();
+
+          if (this.isParenteListaParticipantes) {
+            this.$emit("refreshParticipantes", true);
+            if (this.isPopup) {
+              this.$emit("close", false);
+            }
+          } else {
+            this.cancelar();
+          }
+        })
+        .catch(error => {
+          console.log("erro ", error);
+          loading();
+          notify(
+            {
+              message: "Ocorreu uma falha na comunicação!",
+              position,
+              width: 300,
+              shading: true
+            },
+            "success",
+            4000
+          );
         });
     },
 
@@ -1318,12 +1695,18 @@ export default {
           }
           console.log("passou na validação ");
 
-          if (this.modo === 1) {
+          if (this.modo === 1 && this.receber.meioPgto === "koi") {
             let result = this.prepararAdd();
             this.gravarAdd();
             return;
-          } else {
-            //const
+          }
+
+          if (this.modo === 1 && this.receber.meioPgto === "galaxpay") {
+            console.log("enviar conta para gravar no galaxpay");
+            let receber = _.cloneDeep(this.receber);
+            let card = _.cloneDeep(this.card);
+
+            this.addReceberGalaxpay({ receber, card });
           }
 
           return;
@@ -1364,14 +1747,110 @@ export default {
 
     onAlterarCartao() {},
 
-    onCancelarConta() {},
+    onCancelarConta() {
+      // Cancelar conta receber Koi
+      this.$nextTick(function() {
+        let result = confirm(
+          "<div style='margin-left:15px!important;margin-right:15px!important;'><i>Confirma o cancelamento desta conta? Esta operação não pode ser revertida.</i></div>",
+          "Confirmação"
+        );
+        result.then(dialogResult => {
+          if (!dialogResult) {
+            return false;
+          }
+          loading();
+
+          let payload = {
+            id: this.receber.id,
+            status: "canceled",
+            statusDescription: "Cancelada"
+          };
+
+          const resposta = ServiceReceber.updateReceber(payload)
+            .then(res => {
+              const position = {
+                at: "center center",
+                of: "#bloco1"
+              };
+              notify(
+                {
+                  message: "Transação realizada com sucesso!",
+                  position,
+                  width: 300,
+                  shading: true
+                },
+                "success",
+                3000
+              );
+
+              loading();
+
+              if (this.isParenteListaParticipantes) {
+                this.$emit("refreshParticipantes", true);
+                if (this.isPopup) {
+                  this.$emit("close", false);
+                }
+              } else {
+                this.cancelar();
+              }
+            })
+            .catch(error => {
+              console.log("erro ", error);
+              loading();
+            });
+        });
+      });
+    },
+
+    limparDados() {
+      this.items = [];
+      this.item = {};
+      this.card = {
+        brand: "",
+        cardCode: "",
+        cardName: "",
+        cardNumber: "",
+        cardValidate: ""
+      };
+      this.cartaoCreditoList = [];
+      this.statusItems = [];
+      this.receber = this.receberDefault;
+    },
 
     cancelar() {
+      this.limparDados();
       if (this.isPopup) {
         this.$emit("close", false);
       } else {
         this.$router.push({ name: "recebers" });
       }
+    },
+
+    onReceberDefault() {
+      console.log("receber Default ", this.participante);
+      this.titulo = "Conta a Receber (novo registro)";
+      let receber = this.receberDefault; //_.cloneDeep(this.receberDefault);
+
+      if (_.isEmpty(this.participante)) {
+        return this.receberDefault;
+      } else {
+        receber.pessoa_id = this.participante.pessoa_id;
+        receber.liquido = this.participante.valorBase;
+        receber.desconto = 0.0;
+        receber.value = this.participante.valorBase;
+        receber.quantity = this.participante.parcelas;
+        //receber.valorParcela= 0.0
+        //receber.dateFirst= ""
+        receber.status = "active";
+        receber.statusDescription = "Ativa";
+        receber.participante_id = this.participante.id;
+      }
+      this.receber = receber;
+      return receber;
+    },
+
+    onDetalhesConta() {
+      this.popupDetalhesConta = true;
     }
   }
 };
