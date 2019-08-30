@@ -558,6 +558,7 @@
             :receber_id="receber_id"
             @close="popupReceberVisible= $event;receber_id=-2"
             :limpar="limparItemsReceber"
+            :alunoDisable="true"
             @atualizarListaParticipantes="onAtualizarListaParticipantes"
           />
         </dx-scroll-view>

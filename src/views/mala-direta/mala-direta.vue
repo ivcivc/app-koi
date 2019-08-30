@@ -209,7 +209,7 @@ const dataSource = new DataSource({
       }
 
       if (_.isEmpty(loc)) {
-        return [];
+        //return [];
       }
 
       let res = await Service.getLocalizar(loc);
@@ -320,7 +320,29 @@ export default {
     },
 
     onLocalizar() {
+      if (
+        !_.isEmpty(this.malaDireta.treinamento_id) &&
+        !_.isEmpty(this.malaDireta.not_treinamento_id)
+      ) {
+        const position = {
+          at: "center center",
+          of: "#bloco1"
+        };
+        notify(
+          {
+            message:
+              "Filtro inválido. Selecione um treinamento realizado ou não realizado.",
+            position,
+            width: 300,
+            shading: true
+          },
+          "error",
+          5000
+        );
+      }
+
       let mala = this.malaDireta;
+      this.dataSource.loadOptions()["teste"] = new Date();
       this.dataSource.loadOptions()["localizar"] = mala;
       this.dataSource.loadOptions()["start"] = true;
       this.dataSource.reload();

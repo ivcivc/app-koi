@@ -12,7 +12,7 @@
             :end-day-hour="24"
             :remote-filtering="true"
             :height="700"
-            current-view="day"
+            current-view="month"
             text-expr="Text"
             start-date-expr="StartDate"
             end-date-expr="EndDate"
@@ -272,11 +272,11 @@ export default {
             text: "Celular"
           },
           dataField: "Celular",
-          name: "Email",
+          name: "Celular",
           editorType: "dxTextBox",
           editorOptions: {
             width: "100%",
-            value: data.appointmentData.Email,
+            value: data.appointmentData.Celular,
             readOnly: false,
             mask: "(00) 00000-0000"
           }

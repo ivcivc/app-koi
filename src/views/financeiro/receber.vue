@@ -73,7 +73,7 @@
                     value-expr="id"
                     value
                     :enabled="modo === 1"
-                    :disabled="modo === 2"
+                    :disabled="modo === 2 || alunoDisable"
                     v-model="receber.pessoa_id"
                   >
                     <dx-validator>
@@ -423,7 +423,7 @@
                     ref="btn"
                     type="buttons"
                   />
-                  <dx-column :width="60" data-field="paymentBillInternalId" caption="ID#" />
+                  <dx-column :width="75" data-field="paymentBillInternalId" caption="ID#" />
                   <dx-column :width="70" data-field="installmentNumber" caption="Parcela" />
                   <dx-column data-field="payDay" data-type="date" caption="Vencimento" :width="94" />
                   <dx-column
@@ -745,6 +745,10 @@ export default {
     limpar: {
       type: [String, Number],
       default: 0
+    },
+    alunoDisable: {
+      type: Boolean,
+      default: false
     }
   },
 
